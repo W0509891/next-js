@@ -11,6 +11,6 @@ export async function GET(req) {
 
 export async function POST(req) {
     const { company, title, status='Applied', appliedAt=null, jobUrl=null, notes=null } = await req.json();
-    await executeQuery(INSERT_JOB, company, title, status, appliedAt, jobUrl, notes);
+    await executeQuery(Queries.INSERT_JOB, company, title, status, appliedAt, jobUrl, notes);
     return Response.json({ ok: true }, { status: 201 });
 }

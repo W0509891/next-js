@@ -1,8 +1,5 @@
-'use server'
+'use client'
 
-import {executeQuery} from "@/app/lib/sqlitecloud";
-import {Queries} from "@/app/constants/queries";
-import {redirect} from "next/navigation";
 
 const createJobAction = async (formData) => {
     const company = formData.get("company")
@@ -13,7 +10,12 @@ const createJobAction = async (formData) => {
     const notes = formData.get("notes")
 
     //execute database query to insert new job
-    await executeQuery(Queries.INSERT_JOB, company, title, status, appliedAt, jobUrl, notes)
+    await fetch('/api/jobs/', {
+        method: 'POST',
+        body: JSON.stringify({company, title, status, appliedAt, jobUrl, notes}),
+    }).then(response => response.json()
+        .then(data => console.log(data))
+    )
 
     redirect('/jobs')
 };
