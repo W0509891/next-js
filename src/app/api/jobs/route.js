@@ -3,8 +3,9 @@
 import { executeQuery } from '../../lib/sqlitecloud';
 import { Queries } from '../../constants/queries';
 
-export async function GET() {
-    const rows = await executeQuery(GET_JOBS);
+export async function GET(req) {
+    const id = req.nextUrl.searchParams.get('id');
+    const rows = id ? await executeQuery(Queries.GET_JOB_BY_ID, id): await executeQuery(Queries.GET_JOBS);
     return Response.json(rows);
 }
 
