@@ -1,7 +1,7 @@
 'use server'
 
 import {executeQuery} from "@/app/lib/sqlitecloud";
-import {UPDATE_JOB, DELETE_JOB} from "@/app/constants/queries";
+import {Queries} from "@/app/constants/queries";
 import {redirect} from "next/navigation";
 
 const updateJobAction = async (formData) => {
@@ -14,7 +14,7 @@ const updateJobAction = async (formData) => {
     const id = formData.get("id")
 
     //execute database query to insert new job
-    await executeQuery(UPDATE_JOB, company, title, status, appliedAt, jobUrl, notes, id)
+    await executeQuery(Queries.UPDATE_JOB, company, title, status, appliedAt, jobUrl, notes, id)
 
     redirect(`/jobs/${id}`)
 };
@@ -22,7 +22,7 @@ const updateJobAction = async (formData) => {
 
 const deleteJobAction = async (formData) => {
     const id = formData.get("id")
-    await executeQuery(DELETE_JOB, id)
+    await executeQuery(Queries.DELETE_JOB, id)
     redirect('/jobs')
 }
 export {updateJobAction, deleteJobAction}

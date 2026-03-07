@@ -1,5 +1,5 @@
 import {executeQuery} from "../../lib/sqlitecloud";
-import {GET_JOB_BY_ID, GET_JOBS} from "../../constants/queries";
+import {Queries} from "../../constants/queries";
 import {deleteJobAction} from "./actions";
 import Link from "next/link";
 
@@ -7,7 +7,7 @@ const JobDetailPage = async ({params}) => {
     const resolvedParams = await params
     const jobId = resolvedParams.id
 
-    const jobData = await executeQuery(GET_JOB_BY_ID, jobId);
+    const jobData = await executeQuery(Queries.GET_JOB_BY_ID, jobId);
     const job = jobData[0];
 
     if (!job) return <p>Job not found</p>

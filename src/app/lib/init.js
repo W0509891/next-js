@@ -1,8 +1,8 @@
 //init.js
 
 import { executeQuery } from './sqlitecloud';
-import { CREATE_TABLE } from '../constants/queries';
+import { Queries } from '../constants/queries';
 
 export async function ensureSchema() {
-    await executeQuery(CREATE_TABLE);
+    await executeQuery(Queries.CREATE_TABLE);
 }

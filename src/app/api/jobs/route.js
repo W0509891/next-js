@@ -1,7 +1,7 @@
 //route.js
 
 import { executeQuery } from '../../lib/sqlitecloud';
-import { GET_JOBS, INSERT_JOB } from '../../constants/queries';
+import { Queries } from '../../constants/queries';
 
 export async function GET() {
     const rows = await executeQuery(GET_JOBS);

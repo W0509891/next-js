@@ -1,13 +1,13 @@
 import {updateJobAction} from "../actions";
 import {executeQuery} from "@/app/lib/sqlitecloud";
-import {GET_JOB_BY_ID} from "@/app/constants/queries";
+import {Queries} from "@/app/constants/queries";
 import Link from "next/link";
 
 const EditJobPage = async ({params}) => {
     const resolvedParams = await params
     const jobId = resolvedParams.id
 
-    const jobData = await executeQuery(GET_JOB_BY_ID, jobId);
+    const jobData = await executeQuery(Queries.GET_JOB_BY_ID, jobId);
     const job = jobData[0];
 
     return (
