@@ -1,7 +1,7 @@
 import {Geist, Geist_Mono} from "next/font/google";
 import "./globals.css";
 import {ensureSchema} from "./lib/init";
-import Link from "next/link";
+import Navbar from "@/components/Navbar";
 
 //Initalize DB
 ensureSchema().catch(console.error);
@@ -27,19 +27,13 @@ export default function RootLayout({children}) {
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
 
         <header style={{padding: "12px 16px", borderBottom: "1px solid #eaeaea"}}>
-            <nav style={{display: "flex", gap: "16px" }}>
-                <Link href="/">Home</Link>
-                <Link href="/jobs">Jobs</Link>
-                <Link href="/jobs/new">Add Job</Link>
-            </nav>
+            <Navbar/>
         </header>
-        <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-            <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-
+        <div className="flex min-h-screen items-center justify-center font-sans bg-[--background]">
+            <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16  sm:items-start">
                 <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
                     {children}
                 </div>
-
             </main>
         </div>
         </body>
