@@ -1,41 +1,41 @@
+'use client'
+
 import {updateJobAction} from "../actions";
-import {executeQuery} from "@/app/lib/sqlitecloud";
-import {Queries} from "@/app/constants/queries";
-import Link from "next/link";
+import Form from "@/components/Form";
+import {useEffect, useState, use} from "react";
 
-const EditJobPage = async ({params}) => {
-    const resolvedParams = await params
-    const jobId = resolvedParams.id
+const EditJobPage = ({params}) => {
+    const resolvedParams = use(params);
+    const jobId = resolvedParams.id;
+    const [job, setJob] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const jobData = await executeQuery(Queries.GET_JOB_BY_ID, jobId);
-    const job = jobData[0];
+    useEffect(() => {
+        fetch(`/api/jobs?id=${jobId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    setJob(data[0]);
+                }
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error("Error fetching job:", error);
+                setLoading(false);
+            });
+    }, [jobId]);
+
+    if (loading) {
+        return <div className="p-8 text-center">Loading...</div>;
+    }
+
+    if (!job) {
+        return <div className="p-8 text-center">Job not found.</div>;
+    }
 
     return (
-        <form action={ updateJobAction }>
-            <h1>Edit Job</h1>
-
-            <input type="hidden" name={"id"} defaultValue={jobId}/>
-
-            <label >Company <input type="text" name={"company"} defaultValue={job.company} required/></label>
-            <label >Job Title: <input type="text" name={"title"} defaultValue={job.title}/></label>
-            <label >Status</label>
-            <select name="status" defaultValue={job.status}>
-                <option>Applied</option>
-                <option>Interview</option>
-                <option>Offer</option>
-                <option>Rejected</option>
-            </select>
-            <label >Applied at: <input name={"appliedAt"} type={"date"} defaultValue={job.appliedAt}/></label>
-            <label >Job URL <input name={"jobUrl"} type={"text"} defaultValue={job.jobUrl}/></label>
-            <label >Notes: </label>
-            <textarea name={"notes"} rows={"4"} defaultValue={job.notes}/>
-
-            <button type={"submit"}>Update Job</button>
-
-            <Link href={`/jobs/${jobId}`}>Cancel</Link>
-        </form>
-    )
+        <Form action={updateJobAction} title={"Edit Job"} data={job}/>
+    );
 }
-
 
 export default EditJobPage;
