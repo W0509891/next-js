@@ -1,11 +1,22 @@
-import {executeQuery} from "../lib/sqlitecloud";
-import {GET_JOBS} from "../constants/queries";
+'use client'
+
 import Link from "next/link";
+import {useState, useEffect} from "react";
 
-const jobs = async () => {
+const JobsPage = () => {
 
-    const jobs = await executeQuery(GET_JOBS);
-    console.log(jobs);
+    const [jobs, setJobs] = useState([])
+
+    useEffect(() => {
+        fetch('/api/jobs', {method: "GET"})
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                setJobs(data)
+            })
+    }, [])
+
+
     return (
         <section>
             <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
@@ -27,4 +38,4 @@ const jobs = async () => {
 }
 
 
-export default jobs;
+export default JobsPage;
