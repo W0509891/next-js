@@ -21,14 +21,16 @@ const JobDetailPage = async ({params}) => {
             <pre>{job.notes}</pre>
             <p>Last update: {job.updatedAt}</p>
 
-            <Link href={`/jobs/${jobId}/edit`}>Edit</Link>
+            <div className={"flex flex-row gap-4"}>
+                <Link href={`/jobs/${jobId}/edit`}>Edit</Link>
 
-            <form action={deleteJobAction} method={"post"}>
-                <input type={"hidden"} name={"id"} value={job.id}/>
-                <button className={"text-red-500"} type={"submit"}>Delete</button>
-            </form>
+                <form action={deleteJobAction} method={"post"}>
+                    <input type={"hidden"} name={"id"} value={job.id}/>
+                    <button className={"text-red-500"} type={"submit"}>Delete</button>
+                </form>
+            </div>
         </article>
-    )
+)
 }
 
 
