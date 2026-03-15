@@ -45,7 +45,11 @@ const updateJobAction = async (formData) => {
 
 const deleteJobAction = async (formData) => {
     const id = formData.get("id")
-    await executeQuery(Queries.DELETE_JOB, id)
+    fetch("/api/jobs/", {
+        method: "DELETE",
+        body: JSON.stringify({id}),
+    }).then(response => response.json())
+        .then(data => console.log(data))
     redirect('/jobs')
 }
 export {createJobAction, updateJobAction, deleteJobAction}
