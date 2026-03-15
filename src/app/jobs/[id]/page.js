@@ -1,6 +1,6 @@
 import {executeQuery} from "../../lib/sqlitecloud";
 import {Queries} from "../../constants/queries";
-import {deleteJobAction} from "./actions";
+import {deleteJobAction} from "../actions";
 import Link from "next/link";
 
 const JobDetailPage = async ({params}) => {
