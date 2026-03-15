@@ -14,3 +14,11 @@ export async function POST(req) {
     await executeQuery(Queries.INSERT_JOB, company, title, status, appliedAt, jobUrl, notes);
     return Response.json({ ok: true }, { status: 201 });
 }
+
+export async function PUT(req) {
+    const id = req.nextUrl.searchParams.get('id')
+    const {company, title, status, appliedAt, jobUrl, notes } = await req.json();
+    await executeQuery(Queries.UPDATE_JOB, company, title, status, appliedAt, jobUrl, notes, id);
+    return Response.json({ ok: true }, { status: 200 });
+}
+
