@@ -22,3 +22,8 @@ export async function PUT(req) {
     return Response.json({ ok: true }, { status: 200 });
 }
 
+export async function DELETE(req) {
+    const { id } = await req.json();
+    await executeQuery(Queries.DELETE_JOB, id);
+    return Response.json({ ok: true }, { status: 200 });
+}
