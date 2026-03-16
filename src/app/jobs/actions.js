@@ -63,4 +63,38 @@ const deleteJobAction = async (formData) => {
         .then(data => console.log(data))
     redirect('/jobs')
 }
-export {createJobAction, updateJobAction, deleteJobAction}
+
+const exportToCSV = (jobs) => {
+    if (jobs.length === 0) return;
+    const csv = convertJSONToCSV(jobs);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "jobs_export.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+
+const convertJSONToCSV = (json) => {
+    if (json.length === 0) return "";
+    const headers = Object.keys(json);
+    const headerRow = headers.join(',');
+    const rows = json.map(obj =>
+        headers.map(header => {
+            const val = obj[header] || "";
+            const escaped = ('' + val).replace(/"/g, '""');
+            return `"${escaped}"`;
+        }).join(',')
+    ).join('\n');
+    return `${headerRow}\n${rows}`;
+};
+
+const importFromCSV = async (csvText) => {
+
+}
+
+export {createJobAction, updateJobAction, deleteJobAction, exportToCSV, importFromCSV}
