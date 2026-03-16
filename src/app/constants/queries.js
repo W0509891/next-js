@@ -95,6 +95,18 @@ class Queries {
         FROM jobs
         WHERE id = ?;
     `;
+
+    static GET_METRICS = `
+        ${USE_DB}
+        SELECT 
+            (SELECT COUNT(*) FROM jobs) as totalJobs,
+            (SELECT COUNT(*) FROM jobs WHERE status = 'Applied') as appliedCount,
+            (SELECT COUNT(*) FROM jobs WHERE status = 'Interview') as interviewCount,
+            (SELECT COUNT(*) FROM jobs WHERE status = 'Offer') as offerCount,
+            (SELECT COUNT(*) FROM jobs WHERE status = 'Rejected') as rejectedCount,
+            (SELECT COUNT(*) FROM jobs WHERE appliedAt >= date('now', '-7 days')) as appliedThisWeek,
+            (SELECT COUNT(*) FROM jobs WHERE status = 'Interview' AND updatedAt >= date('now', '-7 days')) as interviewsThisWeek;
+    `;
 }
 
 export {Queries}
