@@ -107,7 +107,9 @@ function Form({action, title, data}) {
                                 className={`w-full px-4 py-2 rounded-lg border ${errors.appliedAt && touched.appliedAt ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all`}
                                 value={formData.appliedAt}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                             />
+                            {errors.appliedAt && touched.appliedAt && <p className="text-red-500 text-xs">{errors.appliedAt }</p>}
                         </div>
                         <div className="flex flex-col gap-2">
                             <label htmlFor="jobUrl" className="text-sm font-semibold text-gray-700 dark:text-gray-300 const">Job URL</label>

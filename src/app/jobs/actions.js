@@ -38,19 +38,19 @@ const updateJobAction = async (formData) => {
     const id = formData.get("id")
 
     const result = UpdateJobSchema.safeParse({id, company, title, status, appliedAt, jobUrl, notes})
-    if (!result.success) {
+    if (result.success) {
+        //execute database query to insert new job
+        fetch(`/api/jobs?id=${id}`, {
+            method: "PUT",
+            body: JSON.stringify({company, title, status, appliedAt, jobUrl, notes}),
+        }).then(response => response.json())
+            .then(data => console.log(data))
+        redirect(`/jobs/${id}`)
+     }
+    else {
         console.log("Validation error:", result.error.flatten());
-        return
     }
 
-    //execute database query to insert new job
-    fetch("/api/jobs/", {
-        method: "PUT",
-        body: JSON.stringify({id, company, title, status, appliedAt, jobUrl, notes}),
-    }).then(response => response.json())
-        .then(data => console.log(data))
-
-    redirect(`/jobs/${id}`)
 };
 
 
@@ -81,7 +81,8 @@ const exportToCSV = (jobs) => {
 
 const convertJSONToCSV = (json) => {
     if (json.length === 0) return "";
-    const headers = Object.keys(json);
+    console.log(json)
+    const headers = Object.keys(json[0]);
     const headerRow = headers.join(',');
     const rows = json.map(obj =>
         headers.map(header => {
@@ -94,7 +95,50 @@ const convertJSONToCSV = (json) => {
 };
 
 const importFromCSV = async (csvText) => {
+    const lines = csvText.split('\n');
+    if (lines.length < 2) return { success: false, message: "CSV is empty or missing headers" };
 
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    const jobs = [];
+    const errors = [];
+
+    for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+
+        // Basic CSV parsing (not handling nested commas/quotes perfectly, but sufficient for this export format)
+        const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+        const job = {};
+        headers.forEach((header, index) => {
+            if (index < values.length) {
+                job[header] = values[index];
+            }
+        });
+
+        const result = CreateJobSchema.safeParse(job);
+        if (result.success) {
+            jobs.push(result.data);
+        } else {
+            errors.push(`Row ${i + 1}: ${JSON.stringify(result.error.flatten().fieldErrors)}`);
+        }
+    }
+
+    if (errors.length > 0 && jobs.length === 0) {
+        return { success: false, errors };
+    }
+
+    // Insert valid jobs
+    const results = await Promise.all(jobs.map(job =>
+        fetch('/api/jobs/', {
+            method: 'POST',
+            body: JSON.stringify(job),
+        }).then(res => res.json())
+    ));
+
+    return {
+        success: true,
+        count: jobs.length,
+        errors: errors.length > 0 ? errors : null
+    };
 }
 
 export {createJobAction, updateJobAction, deleteJobAction, exportToCSV, importFromCSV}

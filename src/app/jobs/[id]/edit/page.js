@@ -25,13 +25,9 @@ const EditJobPage = ({params}) => {
             });
     }, [jobId]);
 
-    if (loading) {
-        return <div className="p-8 text-center">Loading...</div>;
-    }
+    if (loading)  return <div className="p-8 text-center">Loading...</div>;
 
-    if (!job) {
-        return <div className="p-8 text-center">Job not found.</div>;
-    }
+    if (!job) return <div className="p-8 text-center">Job not found.</div>;
 
     return (
         <Form action={updateJobAction} title={"Edit Job"} data={job}/>

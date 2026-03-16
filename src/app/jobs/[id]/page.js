@@ -3,6 +3,7 @@ import {Queries} from "../../constants/queries";
 import {deleteJobAction} from "../actions";
 import Link from "next/link";
 import {statusColor} from "@/schemas/Style";
+import {redirect} from "next/navigation";
 
 const JobDetailPage = async ({params}) => {
     const resolvedParams = await params
@@ -14,8 +15,14 @@ const JobDetailPage = async ({params}) => {
     if (!job) return <p className="text-center text-lg mt-10">Job not found</p>
 
     return (
-        <article className="max-w-2xl mx-auto bg-[--surface] p-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-800">
-            <header className="mb-6">
+        <article className="max-w-2xl mx-auto  p-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-800">
+            <Link href={'/jobs'}
+                  className={"px-4 py-2 bg-blue-50 hover:bg-transparent hover:text-white text-black rounded-md" +
+                      " transition-colors" +
+                      " font-medium text-sm"}>
+                Back
+            </Link>
+            <header className="mt-4 mb-6">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{job.title}</h1>
                 <p className="text-xl text-gray-600 dark:text-gray-400 font-medium">{job.company}</p>
             </header>
