@@ -30,8 +30,8 @@ export default function RootLayout({children}) {
             <Navbar/>
         </header>
         <div className="flex min-h-screen items-center justify-center font-sans bg-[--background]">
-            <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16  sm:items-start">
-                <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
+            <main className="min-h-screen w-full py-2 px-16">
+                <div className="w-full items-center gap-6 text-center sm:items-start sm:text-left">
                     {children}
                 </div>
             </main>
