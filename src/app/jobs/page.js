@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import {useState, useEffect} from "react";
+import {useRouter} from "next/navigation";
 import {exportToCSV, exportToPDF, importFromCSV} from "./actions";
 import {statusColor} from "@/schemas/Style";
 
@@ -11,21 +12,22 @@ const JobsPage = () => {
     const [importStatus, setImportStatus] = useState(null);
 
     // Filter, Sort, Search, Pagination State
+    const settings = loadSettings();
     const [searchTerm, setSearchTerm] = useState("");
-    const [statusFilter, setStatusFilter] = useState("All");
-    const [sortConfig, setSortConfig] = useState({ key: "updatedAt", direction: "desc" });
-    const [currentPage, setCurrentPage] = useState(1);
+    const [statusFilter, setStatusFilter] = useState(settings.statusFilter ?? "All");
+    const [sortConfig, setSortConfig] = useState(settings.lastSortConfig ?? { key: "updatedAt", direction: "desc" });
+    const [currentPage, setCurrentPage] = useState(settings.lastPage ?? 1);
     const [pageSize, setPageSize] = useState(5);
 
+    const loadJobs = () => {
+        fetch('/api/jobs', {method: "GET"})
+            .then(response => response.json())
+            .then(data => {
+                setJobs(data)
+            })
+    }
 
     useEffect(() => {
-        const loadJobs = () => {
-            fetch('/api/jobs', {method: "GET"})
-                .then(response => response.json())
-                .then(data => {
-                    setJobs(data)
-                })
-        }
         loadJobs();
     }, [])
 
@@ -59,6 +61,24 @@ const JobsPage = () => {
         setCurrentPage(1);
     }, [searchTerm, statusFilter, sortConfig]);
 
+    useEffect(() => {
+        const handleClick = (e) => {
+            const link = e.target.closest('a');
+            if (link) saveSettings();
+        };
+        const handleWindowClose = (e) => {
+            e.preventDefault()
+            saveSettings()
+        }
+
+        document.addEventListener('click', handleClick);
+        window.addEventListener('beforeunload', handleWindowClose)
+        return () => {
+            window.removeEventListener('beforeunload', handleWindowClose)
+            document.removeEventListener('click', handleClick);
+        }
+    }, [currentPage, statusFilter, sortConfig])
+
     const handleImport = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -75,6 +95,19 @@ const JobsPage = () => {
         reader.readAsText(file);
     };
 
+    function loadSettings(){
+        const lastPage = Number(localStorage.getItem('lastPage')) ?? null;
+        const statusFilter = localStorage.getItem('statusFilter') ?? null;
+        const lastSortConfig = JSON.parse(localStorage.getItem('lastSortConfig')) ?? null;
+
+        return {lastPage, statusFilter, lastSortConfig};
+    }
+
+    function saveSettings(){
+        localStorage.setItem('lastPage', currentPage.toString());
+        localStorage.setItem('statusFilter', statusFilter.toString());
+        localStorage.setItem('lastSortConfig', JSON.stringify(sortConfig));
+    }
     return (
         <section className="max-w-4xl mx-auto p-4">
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
