@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {useState, useEffect} from "react";
-import {useRouter} from "next/navigation";
 import {exportToCSV, exportToPDF, importFromCSV} from "./actions";
 import {statusColor} from "@/schemas/Style";
 
@@ -14,9 +13,9 @@ const JobsPage = () => {
     // Filter, Sort, Search, Pagination State
     const settings = loadSettings();
     const [searchTerm, setSearchTerm] = useState("");
-    const [statusFilter, setStatusFilter] = useState(settings.statusFilter ?? "All");
-    const [sortConfig, setSortConfig] = useState(settings.lastSortConfig ?? {key: "updatedAt", direction: "desc"});
-    const [currentPage, setCurrentPage] = useState(settings.lastPage ?? 1);
+    const [statusFilter, setStatusFilter] = useState(() => loadSettings().statusFilter);
+    const [sortConfig, setSortConfig] = useState(() => loadSettings().lastSortConfig);
+    const [currentPage, setCurrentPage] = useState(() => loadSettings().lastPage);
     const [pageSize, setPageSize] = useState(5);
 
     const loadJobs = () => {
@@ -95,12 +94,19 @@ const JobsPage = () => {
     };
 
     function loadSettings() {
-        const lastPage = Number(localStorage.getItem('lastPage')) ?? null;
-        const statusFilter = localStorage.getItem('statusFilter') ?? null;
-        const lastSortConfig = JSON.parse(localStorage.getItem('lastSortConfig')) ?? null;
+        if (typeof window === 'undefined') return {
+            lastPage: 1,
+            statusFilter: "All",
+            lastSortConfig: { key: "updatedAt", direction: "desc" }
+        };
 
-        return {lastPage, statusFilter, lastSortConfig};
+        return {
+            lastPage: Number(localStorage.getItem('lastPage')) || 1,
+            statusFilter: localStorage.getItem('statusFilter') ?? "All",
+            lastSortConfig: JSON.parse(localStorage.getItem('lastSortConfig')) ?? { key: "updatedAt", direction: "desc" }
+        };
     }
+
 
     function saveSettings() {
         localStorage.setItem('lastPage', currentPage.toString());
