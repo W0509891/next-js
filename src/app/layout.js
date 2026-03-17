@@ -29,7 +29,7 @@ export default function RootLayout({children}) {
         <header style={{padding: "12px 16px", borderBottom: "1px solid #eaeaea"}}>
             <Navbar/>
         </header>
-        <div className="flex min-h-screen items-center justify-center font-sans bg-[--background]">
+        <div className="flex min-h-screen items-center justify-center font-sans bg-background">
             <main className="min-h-screen w-full py-2 px-16">
                 <div className="w-full items-center gap-6 text-center sm:items-start sm:text-left">
                     {children}
