@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@sqlitecloud/drivers':
-        specifier: ^1.0.739
+        specifier: ^1.0.779
         version: 1.0.779
       next:
         specifier: 16.1.6
@@ -20,6 +20,9 @@ importers:
       react-dom:
         specifier: 19.2.3
         version: 19.2.3(react@19.2.3)
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4
