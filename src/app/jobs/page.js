@@ -19,6 +19,13 @@ const JobsPage = () => {
 
 
     useEffect(() => {
+        const loadJobs = () => {
+            fetch('/api/jobs', {method: "GET"})
+                .then(response => response.json())
+                .then(data => {
+                    setJobs(data)
+                })
+        }
         loadJobs();
     }, [])
 
