@@ -10,13 +10,13 @@ const JobsPage = () => {
     const [jobs, setJobs] = useState([])
     const [importStatus, setImportStatus] = useState(null);
 
-    const loadJobs = () => {
-        fetch('/api/jobs', {method: "GET"})
-            .then(response => response.json())
-            .then(data => {
-                setJobs(data)
-            })
-    }
+    // Filter, Sort, Search, Pagination State
+    const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState("All");
+    const [sortConfig, setSortConfig] = useState({ key: "updatedAt", direction: "desc" });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
+
 
     useEffect(() => {
         loadJobs();
