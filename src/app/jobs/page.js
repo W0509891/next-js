@@ -77,17 +77,66 @@ const JobsPage = () => {
 
     return (
         <section className="max-w-4xl mx-auto p-4">
-            <div className="flex flex-col justify-between items-center mb-6">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <h1 className="text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
                     Job Listings
                 </h1>
-                <div className="flex gap-2">
-                    <button onClick={() => exportToCSV(jobs)} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">Export CSV</button>
-                    <label className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors cursor-pointer">
+                <div className="flex flex-wrap gap-2 justify-center text-foreground">
+                    <button onClick={() => exportToCSV(jobs)} className="px-4 py-2   rounded hover:bg-green-700 transition-colors">Export CSV</button>
+                    <label className="px-4 py-2 rounded hover:bg-yellow-700 transition-colors cursor-pointer">
                         Import CSV
                         <input type="file" accept=".csv" onChange={handleImport} className="hidden" />
                     </label>
-                    <Link href="/jobs/new" className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors">Add Job</Link>
+                    <Link href="/jobs/new" className="px-4 py-2  rounded hover:bg-indigo-700 transition-colors">Add Job</Link>
+                </div>
+            </div>
+
+            {/* Filter/Sort Controls */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 bg-surface p-4 rounded-lg border border-gray-200 dark:border-gray-800">
+                <div className="flex flex-col gap-1 text-foreground">
+                    <label className="text-xs font-semibold uppercase text-gray-500">Search</label>
+                    <input
+                        type="text"
+                        placeholder="Company or Title..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none"
+                    />
+                </div>
+                <div className="flex flex-col gap-1 text-foreground">
+                    <label className="text-xs font-semibold uppercase text-gray-500">Status</label>
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none"
+                    >
+                        <option value="All">All Statuses</option>
+                        <option value="Applied">Applied</option>
+                        <option value="Interview">Interview</option>
+                        <option value="Offer">Offer</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+                <div className="flex flex-col gap-1 text-foreground">
+                    <label className="text-xs font-semibold uppercase text-gray-500">Sort By</label>
+                    <div className="flex gap-1">
+                        <select
+                            value={sortConfig.key}
+                            onChange={(e) => setSortConfig(prev => ({ ...prev, key: e.target.value }))}
+                            className="flex-1 px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none"
+                        >
+                            <option value="updatedAt">Date Updated</option>
+                            <option value="company">Company</option>
+                            <option value="title">Job Title</option>
+                        </select>
+                        <button
+                            onClick={() => setSortConfig(prev => ({ ...prev, direction: prev.direction === 'asc' ? 'desc' : 'asc' }))}
+                            className="px-3 py-2 bg-surface rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                            title={sortConfig.direction === 'asc' ? 'Sort Descending' : 'Sort Ascending'}
+                        >
+                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -103,11 +152,11 @@ const JobsPage = () => {
                 </div>
             )}
             {
-                jobs.length === 0 ? <p>No jobs found</p> :
-                    <div className={"flex flex-col gap-4"}>
+                paginatedJobs.length === 0 ? <p className="text-center py-10 text-gray-500">No jobs match your criteria.</p> :
+                    <div className={"flex flex-col gap-6"}>
                         <ul className="grid grid-cols-1 gap-4">
-                            {jobs.map(job =>
-                                <li key={job.id} className="border border-gray-200 dark:border-gray-800 p-4 rounded-lg hover:shadow-md transition-shadow">
+                            {paginatedJobs.map(job =>
+                                <li key={job.id} className="border border-gray-200 dark:border-gray-800 p-4 rounded-lg hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
                                     <Link href={`/jobs/${job.id}`} className={`text-foreground flex justify-between items-center`}>
                                         <div>
                                             <h2 className="text-xl font-bold">{job.company}</h2>
@@ -121,8 +170,43 @@ const JobsPage = () => {
                             )
                             }
                         </ul>
-                    </div>
 
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                            <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    Showing <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span> to <span className="font-medium">{Math.min(currentPage * pageSize, filteredJobs.length)}</span> of <span className="font-medium">{filteredJobs.length}</span> results
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-1 border  text-foreground border-gray-300 dark:border-gray-700 rounded-md disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                    >
+                                        Previous
+                                    </button>
+                                    <div className="flex gap-1">
+                                        {[...Array(totalPages)].map((_, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => setCurrentPage(i + 1)}
+                                                className={`w-8 h-8 flex items-center justify-center rounded-md text-sm transition-colors ${currentPage === i + 1 ? 'bg-indigo-600 text-white' : 'hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                                            >
+                                                {i + 1}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-1 border text-foreground rounded-md disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
             }
         </section>
     )

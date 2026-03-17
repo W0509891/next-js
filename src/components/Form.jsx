@@ -38,7 +38,7 @@ function Form({action, title, data}) {
 
     return (
         <>
-            <form action={action} className="max-w-2xl mx-auto my-8 p-8 bg-surface rounded-xl shadow-lg border border-gray-200 dark:border-gray-800">
+            <form action={action} className="max-w-2xl mx-auto my-8 p-8 bg-surface text-foreground rounded-xl shadow-lg border border-gray-200 dark:border-gray-800">
 
                 <div className="flex flex-col gap-6">
                         {data && <input type="hidden" name="id" value={data?.id}/>}
