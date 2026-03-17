@@ -27,3 +27,14 @@ export const JobSchema = z.object({
 
 export const CreateJobSchema = JobSchema.omit({id: true, updatedAt: true, appliedAt: true});
 export const UpdateJobSchema = JobSchema.omit({updatedAt: true, notes: true});
+
+
+export const metrics = {
+    totalJobs: 0,
+    appliedCount: 0,
+    interviewCount: 0,
+    offerCount: 0,
+    rejectedCount: 0,
+    appliedThisWeek: 0,
+    interviewsThisWeek: 0
+}

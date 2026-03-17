@@ -5,7 +5,7 @@ function Navbar() {
         <nav className={"flex gap-4 h-2/3"}>
             <Link href="/">Home</Link>
             <Link href="/jobs">Jobs</Link>
-            <Link href="/jobs/new">Add Job</Link>
+            <Link href="/dashboard">Dashboard</Link>
         </nav>
     )
 }
