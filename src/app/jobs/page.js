@@ -29,6 +29,36 @@ const JobsPage = () => {
         loadJobs();
     }, [])
 
+    const filteredJobs = jobs.filter(job => {
+            const matchesSearch = job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                job.title.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === "All" || job.status === statusFilter;
+            return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => {
+            console.log(a, b)
+            if (!sortConfig.key) return 0;
+            const aValue = a[sortConfig.key] || "";
+            const bValue = b[sortConfig.key] || "";
+
+            if (aValue < bValue) {
+                return sortConfig.direction === "asc" ? -1 : 1;
+            }
+
+            if (aValue > bValue) {
+                return sortConfig.direction === "asc" ? 1 : -1;
+            }
+            return 0;
+        });
+
+    const totalPages = Math.ceil(filteredJobs.length / pageSize);
+    const paginatedJobs = filteredJobs.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+    // Reset page if filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, statusFilter, sortConfig]);
+
     const handleImport = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
