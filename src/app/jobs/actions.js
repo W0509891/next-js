@@ -105,7 +105,6 @@ const importFromCSV = async (csvText) => {
     for (let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
 
-        // Basic CSV parsing (not handling nested commas/quotes perfectly, but sufficient for this export format)
         const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
         const job = {};
         headers.forEach((header, index) => {
@@ -118,7 +117,9 @@ const importFromCSV = async (csvText) => {
         if (result.success) {
             jobs.push(result.data);
         } else {
-            errors.push(`Row ${i + 1}: ${JSON.stringify(result.error.flatten().fieldErrors)}`);
+            const path = result.error.issues.map(issue => issue.path.join('.')).join(', ');
+            const message = result.error.issues.map(issue => issue.message).join(', ');
+            errors.push(`Row ${i + 1}: Errors with these fields - ${JSON.stringify(path)}`);
         }
     }
 
