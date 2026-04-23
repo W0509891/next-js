@@ -1,4 +1,4 @@
-import {executeQuery} from "../lib/sqlitecloud";
+import {executeQuery} from "../lib/sqlite";
 import {Queries} from "../constants/queries";
 import {metrics as JobMetrics} from "@/schemas/JobSchema";
 
