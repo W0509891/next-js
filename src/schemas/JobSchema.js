@@ -21,12 +21,12 @@ export const JobSchema = z.object({
         .max(500, "URL is too long")
         .optional(),
 
-    appliedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format").optional(),
+    appliedAt: z.string().optional(),
     updatedAt: z.string().optional(),
 });
 
-export const CreateJobSchema = JobSchema.omit({id: true, updatedAt: true, appliedAt: true});
-export const UpdateJobSchema = JobSchema.omit({updatedAt: true, notes: true});
+export const CreateJobSchema = JobSchema.omit({id: true, updatedAt: true});
+export const UpdateJobSchema = JobSchema.omit({updatedAt: true, notes: true}).partial();
 
 
 export const metrics = {

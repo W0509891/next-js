@@ -27,6 +27,10 @@
   --color-error: #fb2c36;
   --color-success: var(--success);
   --color-muted: var(--muted);
+  --color-applied: #3b82f6;
+  --color-interview: #f59e0b;
+  --color-offer: #10b981;
+  --color-rejected: #ef4444;
 }
 
 
@@ -46,6 +50,50 @@ input, textarea {
 .const::after {
   content: " *";
   color: red;
+}
+
+.status-pill {
+  @apply px-3 py-1 rounded-full text-sm font-medium uppercase tracking-wider;
+}
+
+.status-applied {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+.status-interview {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+.status-offer {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+}
+
+.status-rejected {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  .status-applied {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    color: #93c5fd !important;
+  }
+  .status-interview {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+    color: #fcd34d !important;
+  }
+  .status-offer {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+    color: #6ee7b7 !important;
+  }
+  .status-rejected {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    color: #fca5a5 !important;
+  }
 }
 
 .button {

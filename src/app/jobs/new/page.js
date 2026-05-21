@@ -1,5 +1,5 @@
 'use client'
-import {createJobAction} from "../actions";
+import {createJobAction} from "../../lib/actions";
 import Form from "@/components/Form";
 
 const NewJobPage = () => {

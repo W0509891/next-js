@@ -1,9 +1,8 @@
 import {executeQuery} from "../../lib/sqlite";
 import {Queries} from "../../constants/queries";
-import {deleteJobAction} from "../actions";
+import {deleteJobAction} from "../../lib/actions";
 import Link from "next/link";
 import {statusColor} from "@/schemas/Style";
-import {redirect} from "next/navigation";
 
 const JobDetailPage = async ({params}) => {
     const resolvedParams = await params
