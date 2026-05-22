@@ -1,6 +1,6 @@
 'use client'
 
-import {updateJobAction} from "../../actions";
+import {updateJobAction} from "@/app/lib/actions";
 import Form from "@/components/Form";
 import {useEffect, useState, use} from "react";
 

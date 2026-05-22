@@ -56,6 +56,21 @@ class Queries {
         ORDER BY updatedAt DESC LIMIT 50;
     `;
 
+    static GET_JOBS_NOT_REJECTED = `
+        ${USE_DB}
+        SELECT id,
+               company,
+               title,
+               status,
+               appliedAt,
+               jobUrl,
+               notes,
+               updatedAt
+        FROM jobs
+        WHERE status != 'Rejected'
+        ORDER BY updatedAt DESC LIMIT 50;
+    `
+
     static GET_JOB_BY_ID = `
         ${USE_DB}
         SELECT id,
@@ -72,19 +87,15 @@ class Queries {
 
     static INSERT_JOB = `
         ${USE_DB}
-        INSERT INTO jobs (company, title, status, appliedAt, jobUrl, notes)
-  VALUES (?, ?, ?, ?, ?, ?);
+        INSERT INTO jobs (id, company, title, status, appliedAt, jobUrl, notes)
+  VALUES (?, ?, ?, ?, ?, ?, ?);
     `;
 
-    static UPDATE_JOB = `
+    static UPDATE_JOB = (fields)=> `
         ${USE_DB}
         UPDATE jobs
-        SET company   = ?,
-            title     = ?,
-            status    = ?,
-            appliedAt = ?,
-            jobUrl    = ?,
-            notes     = ?,
+        SET ${fields.map((field, index) => `${field} = ?`)
+                .join(', \n').concat(',') }
             updatedAt = datetime('now')
         WHERE id = ?;
     `;

@@ -2,21 +2,47 @@
 
 import Link from "next/link";
 import {useState, useEffect} from "react";
-import {exportToCSV, exportToPDF, importFromCSV} from "./actions";
-import {statusColor} from "@/schemas/Style";
+import {createJobAction, exportToCSV, importFromCSV, updateJobAction} from "../lib/actions";
+import JobPill from "@/components/JobPill";
+import Form from "@/components/Form";
+import {JobDetails} from "@/components/JobDetails";
 
 const JobsPage = () => {
+
+    function loadSettings() {
+        if (typeof window === 'undefined') return {
+            lastPage: 1,
+            statusFilter: "All",
+            lastSortConfig: { key: "updatedAt", direction: "desc" }
+        };
+
+        return {
+            lastPage: Number(localStorage.getItem('lastPage')) || 1,
+            statusFilter: localStorage.getItem('statusFilter') ?? "All",
+            lastSortConfig: JSON.parse(localStorage.getItem('lastSortConfig')) ?? { key: "updatedAt", direction: "desc" }
+        };
+    }
 
     const [jobs, setJobs] = useState([])
     const [importStatus, setImportStatus] = useState(null);
 
     // Filter, Sort, Search, Pagination State
     const settings = loadSettings();
+    const [showNewJob, showNewJobModal] = useState(false);
+    const [showUpdateJob, showUpdateJobModal] = useState(false);
+    const [showDetails, setShowDetails] = useState(false);
+    const [selectedJob, setSelectedJob] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const [statusFilter, setStatusFilter] = useState(() => loadSettings().statusFilter);
-    const [sortConfig, setSortConfig] = useState(() => loadSettings().lastSortConfig);
-    const [currentPage, setCurrentPage] = useState(() => loadSettings().lastPage);
+    const [statusFilter, setStatusFilter] = useState(() => settings.statusFilter);
+    const [sortConfig, setSortConfig] = useState(() => settings.lastSortConfig);
+    const [currentPage, setCurrentPage] = useState(() => settings.lastPage);
     const [pageSize, setPageSize] = useState(5);
+
+    const saveSettings = () => {
+        localStorage.setItem('lastPage', currentPage.toString());
+        localStorage.setItem('statusFilter', statusFilter.toString());
+        localStorage.setItem('lastSortConfig', JSON.stringify(sortConfig));
+    };
 
     const loadJobs = () => {
         fetch('/api/jobs', {method: "GET"})
@@ -93,34 +119,89 @@ const JobsPage = () => {
         reader.readAsText(file);
     };
 
-    function loadSettings() {
-        if (typeof window === 'undefined') return {
-            lastPage: 1,
-            statusFilter: "All",
-            lastSortConfig: { key: "updatedAt", direction: "desc" }
-        };
-
-        return {
-            lastPage: Number(localStorage.getItem('lastPage')) || 1,
-            statusFilter: localStorage.getItem('statusFilter') ?? "All",
-            lastSortConfig: JSON.parse(localStorage.getItem('lastSortConfig')) ?? { key: "updatedAt", direction: "desc" }
-        };
-    }
-
-
-    function saveSettings() {
-        localStorage.setItem('lastPage', currentPage.toString());
-        localStorage.setItem('statusFilter', statusFilter.toString());
-        localStorage.setItem('lastSortConfig', JSON.stringify(sortConfig));
-    }
 
     return (
-        <section className="max-w-4xl mx-auto p-4">
+        <section className="max-w-4xl mx-auto p-4 relative">
+            {showNewJob && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div 
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                        onClick={() => showNewJobModal(false)}
+                    ></div>
+                    <div className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
+                        <Form 
+                            action={async (formData) => {
+                                await createJobAction(formData);
+                                showNewJobModal(false);
+                                loadJobs();
+                            }} 
+                            title={"Add New Job"}
+                            onCancel={() => showNewJobModal(false)}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {showUpdateJob && selectedJob && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div 
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                        onClick={() => {
+                            showUpdateJobModal(false);
+                            setSelectedJob(null);
+                        }}
+                    ></div>
+                    <div className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
+                        <Form
+                            action={async (formData) => {
+                                await updateJobAction(formData);
+                                showUpdateJobModal(false);
+                                setSelectedJob(null);
+                                loadJobs();
+                            }}
+                            title={"Update Job"}
+                            data={selectedJob}
+                            onCancel={() => {
+                                showUpdateJobModal(false);
+                                setSelectedJob(null);
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {showDetails && selectedJob && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div 
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                        onClick={() => {
+                            setShowDetails(false);
+                            setSelectedJob(null);
+                        }}
+                    ></div>
+                    <div className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
+                        <JobDetails
+                            job={selectedJob}
+                            onClose={() => {
+                                setShowDetails(false);
+                                setSelectedJob(null);
+                            }}
+                            onEdit={() => {
+                                setShowDetails(false);
+                                showUpdateJobModal(true);
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <h1 className="text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
                     Job Listings
                 </h1>
                 <div className="flex flex-wrap gap-2 justify-center text-foreground">
+                    <button className="px-4 py-2   rounded hover:bg-blue-300 transition-colors">
+                        <a href="/api/download">Download DB</a>
+                    </button>
                     <button onClick={() => exportToCSV(jobs)}
                             className="px-4 py-2   rounded hover:bg-green-700 transition-colors">Export CSV
                     </button>
@@ -128,8 +209,9 @@ const JobsPage = () => {
                         Import CSV
                         <input type="file" accept=".csv" onChange={handleImport} className="hidden"/>
                     </label>
-                    <Link href="/jobs/new" className="px-4 py-2  rounded hover:bg-indigo-700 transition-colors">Add
-                        Job</Link>
+                    <div onClick={() => showNewJobModal(!showNewJob)} className="px-4 py-2  rounded hover:bg-indigo-700 transition-colors">
+                        Add Job
+                    </div>
                 </div>
             </div>
 
@@ -211,25 +293,23 @@ const JobsPage = () => {
                 paginatedJobs.length === 0 ?
                     <p className="text-center py-10 text-gray-500">No jobs match your criteria.</p> :
                     <div className={"flex flex-col gap-6"}>
-                        <ul className="grid grid-cols-1 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             {paginatedJobs.map(job =>
-                                <li key={job.id}
-                                    className="border border-gray-200 dark:border-gray-800 p-4 rounded-lg hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
-                                    <Link href={`/jobs/${job.id}`}
-                                          className={`text-foreground flex justify-between items-center`}>
-                                        <div>
-                                            <h2 className="text-xl font-bold">{job.company}</h2>
-                                            <p className="text-gray-600 dark:text-gray-400">{job.title}</p>
-                                        </div>
-                                        <span
-                                            className={`px-3 py-1 rounded-full text-sm font-medium ${statusColor(job.status)}`}>
-                                            {job.status}
-                                        </span>
-                                    </Link>
-                                </li>
+                                <JobPill 
+                                    key={job.id} 
+                                    job={job} 
+                                    onClick={() => {
+                                        setSelectedJob(job);
+                                        setShowDetails(true);
+                                    }}
+                                    onEdit={() => {
+                                        setSelectedJob(job);
+                                        showUpdateJobModal(true);
+                                    }}
+                                />
                             )
                             }
-                        </ul>
+                        </div>
 
                         {/* Pagination Controls */}
                         {totalPages > 1 && (

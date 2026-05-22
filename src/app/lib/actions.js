@@ -1,7 +1,11 @@
-'use client'
+'use server'
 
+import {revalidatePath} from "next/cache";
 import {redirect} from "next/navigation";
+import {executeQuery} from "./sqlite";
+import {Queries} from "../constants/queries";
 import {CreateJobSchema, UpdateJobSchema} from "@/schemas/JobSchema";
+
 
 const createJobAction = async (formData) => {
     const company = formData.get("company")
@@ -11,60 +15,73 @@ const createJobAction = async (formData) => {
     const jobUrl = formData.get("jobUrl")
     const notes = formData.get("notes")
 
-    const result = CreateJobSchema.safeParse({company, title, status, appliedAt, jobUrl, notes})
+    const result = CreateJobSchema.safeParse({company, title, status, appliedAt, jobUrl})
     if (!result.success) {
         console.log("Validation error:", result.error.flatten());
         return
     }
+    const id = crypto.randomUUID();
+    console.log(formData)
+    await executeQuery(Queries.INSERT_JOB, id, company, title, status, appliedAt, jobUrl, notes);
 
-    //execute database query to insert new job
-    await fetch('/api/jobs/', {
-        method: 'POST',
-        body: JSON.stringify({company, title, status, appliedAt, jobUrl, notes}),
-    }).then(response => response.json()
-        .then(data => console.log(data))
-    )
-
+    revalidatePath('/jobs')
     redirect('/jobs')
 };
 
 const updateJobAction = async (formData) => {
-    const company = formData.get("company")
-    const title = formData.get("title")
-    const status = formData.get("status")
-    const appliedAt = formData.get("appliedAt")
-    const jobUrl = formData.get("jobUrl")
-    const notes = formData.get("notes")
     const id = formData.get("id")
+    if (!id) {
+        console.error("No ID provided for update");
+        return;
+    }
 
-    const result = UpdateJobSchema.safeParse({id, company, title, status, appliedAt, jobUrl, notes})
+    const data = {};
+    const updatableFields = ["company", "title", "status", "appliedAt", "jobUrl", "notes"];
+    
+    for (const field of updatableFields) {
+        if (formData.has(field)) {
+            data[field] = formData.get(field);
+        }
+    }
+
+    const result = UpdateJobSchema.safeParse({id, ...data})
     if (result.success) {
-        //execute database query to insert new job
-        fetch(`/api/jobs?id=${id}`, {
-            method: "PUT",
-            body: JSON.stringify({company, title, status, appliedAt, jobUrl, notes}),
-        }).then(response => response.json())
-            .then(data => console.log(data))
-        redirect(`/jobs/${id}`)
-     }
+        const fields = Object.keys(data);
+        const values = Object.values(data);
+        await executeQuery(Queries.UPDATE_JOB(fields), ...values, id);
+        revalidatePath(`/jobs/${id}`)
+        revalidatePath('/jobs')
+        redirect(`/jobs`)
+    }
     else {
         console.log("Validation error:", result.error.flatten());
     }
 
 };
 
-
+const updateStatusAction = async (id, status) => {
+    await executeQuery(Queries.UPDATE_JOB(["status"]), status, id);
+    revalidatePath(`/jobs`)
+    redirect(`/jobs`)
+}
 const deleteJobAction = async (formData) => {
-    const id = formData.get("id")
-    fetch("/api/jobs/", {
-        method: "DELETE",
-        body: JSON.stringify({id}),
-    }).then(response => response.json())
-        .then(data => console.log(data))
+    let id;
+    if (formData instanceof FormData) {
+        id = formData.get("id")
+    } else {
+        id = formData;
+    }
+    
+    await executeQuery(Queries.DELETE_JOB, id);
+    
+    revalidatePath('/jobs')
+    if (!(formData instanceof FormData)) {
+        return { success: true };
+    }
     redirect('/jobs')
 }
 
-const exportToCSV = (jobs) => {
+const exportToCSV = async (jobs) => {
     if (jobs.length === 0) return;
     const csv = convertJSONToCSV(jobs);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -78,8 +95,7 @@ const exportToCSV = (jobs) => {
     document.body.removeChild(link);
 }
 
-
-const convertJSONToCSV = (json) => {
+const convertJSONToCSV = async (json) => {
     if (json.length === 0) return "";
     console.log(json)
     const headers = Object.keys(json[0]);
@@ -128,12 +144,10 @@ const importFromCSV = async (csvText) => {
     }
 
     // Insert valid jobs
-    const results = await Promise.all(jobs.map(job =>
-        fetch('/api/jobs/', {
-            method: 'POST',
-            body: JSON.stringify(job),
-        }).then(res => res.json())
-    ));
+    for (const job of jobs) {
+        await executeQuery(Queries.INSERT_JOB, job.company, job.title, job.status, job.appliedAt, job.jobUrl, job.notes);
+    }
+    revalidatePath('/jobs')
 
     return {
         success: true,
@@ -142,4 +156,5 @@ const importFromCSV = async (csvText) => {
     };
 }
 
-export {createJobAction, updateJobAction, deleteJobAction, exportToCSV, importFromCSV}
+export {createJobAction, updateJobAction, deleteJobAction, exportToCSV, importFromCSV, executeQuery,
+    updateStatusAction}
