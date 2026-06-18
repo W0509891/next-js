@@ -4,6 +4,7 @@ import { executeQuery } from '../../lib/sqlite';
 import { Queries } from '../../constants/queries';
 import { CreateJobSchema, UpdateJobSchema } from '@/schemas/JobSchema';
 import {NextResponse} from "next/server";
+import {parse_date} from "@/app/lib/helpers";
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS.split(';');
 
@@ -41,7 +42,7 @@ export async function POST(req) {
 
     const { company, title, status, appliedAt, jobUrl, notes } = result.data;
     const id = crypto.randomUUID();
-    await executeQuery(Queries.INSERT_JOB, id, company, title, status, appliedAt, jobUrl, notes);
+    await executeQuery(Queries.INSERT_JOB, id, company, title, status, parse_date(appliedAt), jobUrl, notes);
     return NextResponse.json({ ok: true, id }, { status: 201, headers: getCorsHeaders(req) });
 }
 
