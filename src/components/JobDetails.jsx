@@ -3,6 +3,7 @@ import { Copy, Check, Edit2 } from "lucide-react";
 import { statusColor } from "@/schemas/Style";
 import { updateStatusAction } from "@/app/lib/actions";
 import { useRouter } from "next/navigation";
+import {stringify_date} from "@/app/lib/helpers";
 
 export const JobDetails = ({ job, onEdit, onClose }) => {
     const router = useRouter();
@@ -51,7 +52,7 @@ export const JobDetails = ({ job, onEdit, onClose }) => {
                 <DetailItem label="Status" isStatus={true} status={status} handleStatusChange={handleStatusChange} />
                 <DetailItem label="Company" value={job.company} onEditClick={onEdit} />
                 <DetailItem label="Job Title" value={job.title} onEditClick={onEdit} />
-                <DetailItem label="Applied At" value={new Date(job.appliedAt).toLocaleString()} onEditClick={onEdit} />
+                <DetailItem label="Applied At" value={stringify_date(job.appliedAt, 2)} onEditClick={onEdit} />
                 <DetailItem label="Job URL" value={job.jobUrl} onEditClick={onEdit} />
                 <DetailItem label="Notes" value={job.notes} onEditClick={onEdit} />
             </div>
@@ -69,7 +70,7 @@ export const JobDetails = ({ job, onEdit, onClose }) => {
                             {copiedId ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
                         </button>
                         <span className="text-gray-300 dark:text-gray-700">|</span>
-                        <span>{new Date(job.updatedAt).toLocaleString()}</span>
+                        <span>{stringify_date(job.updatedAt, 2)}</span>
                     </div>
                 </div>
                 <button 

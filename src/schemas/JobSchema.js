@@ -8,7 +8,7 @@ export const JobSchema = z.object({
         .max(100, "Title is too long"),
 
     company: z.string()
-        .min(3, "Surely The company has a name and it's not this short, right?")
+        .min(1, "Surely The company has a name and it's not this short, right?")
         .max(100, "Company is too long"),
 
     status: z.enum(["Applied", "Interview", "Offer", "Rejected"]),
@@ -18,11 +18,11 @@ export const JobSchema = z.object({
         .optional(),
 
     jobUrl: z.url("Surely there's a link to the job?")
-        .max(500, "URL is too long")
+        .max(1000, "URL is too long")
         .optional(),
 
-    appliedAt: z.string().optional(),
-    updatedAt: z.string().optional(),
+    appliedAt: z.union([z.string(), z.number()]).optional(),
+    updatedAt: z.union([z.string(), z.number()]).optional(),
 });
 
 export const CreateJobSchema = JobSchema.omit({id: true, updatedAt: true});

@@ -2,24 +2,17 @@ import {statusColor} from "@/schemas/Style";
 import Link from "next/link";
 import {useState, useEffect} from "react";
 import {CreateJobSchema, UpdateJobSchema} from "@/schemas/JobSchema";
+import {stringify_date} from "@/app/lib/helpers";
 
 function Form({action, title, data, onCancel}) {
-    const getLocalDateTime = () => {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
+
 
     const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
         company: data?.company || "",
         title: data?.title || "",
         status: data?.status || "Applied",
-        appliedAt: data?.appliedAt || getLocalDateTime(),
+        appliedAt: stringify_date(data?.appliedAt),
         jobUrl: data?.jobUrl || "",
         notes: data?.notes || ""
     });

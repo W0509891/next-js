@@ -5,6 +5,7 @@ import {redirect} from "next/navigation";
 import {executeQuery} from "./sqlite";
 import {Queries} from "../constants/queries";
 import {CreateJobSchema, UpdateJobSchema} from "@/schemas/JobSchema";
+import {parse_date} from "@/app/lib/helpers";
 
 
 const createJobAction = async (formData) => {
@@ -21,8 +22,8 @@ const createJobAction = async (formData) => {
         return
     }
     const id = crypto.randomUUID();
-    console.log(formData)
-    await executeQuery(Queries.INSERT_JOB, id, company, title, status, appliedAt, jobUrl, notes);
+    console.log(id, formData)
+    await executeQuery(Queries.INSERT_JOB, id, company, title, status, parse_date(appliedAt), jobUrl, notes);
 
     revalidatePath('/jobs')
     redirect('/jobs')
@@ -40,7 +41,12 @@ const updateJobAction = async (formData) => {
     
     for (const field of updatableFields) {
         if (formData.has(field)) {
+            if (field === "appliedAt") {
+                data[field] = parse_date(formData.get(field));
+            }
+            else {
             data[field] = formData.get(field);
+            }
         }
     }
 
@@ -81,18 +87,19 @@ const deleteJobAction = async (formData) => {
     redirect('/jobs')
 }
 
-const exportToCSV = async (jobs) => {
+const exportToCSV = async (q, timeframe) => {
+    const query = {
+        daily: Queries.GET_JOBS_APPLIED_TODAY,
+        timeframe: Queries.GET_JOBS_BY_TIMEFRAME(timeframe || -7),
+        all: Queries.GET_JOBS,
+    }
+    const jobs = await executeQuery(query[q]);
     if (jobs.length === 0) return;
-    const csv = convertJSONToCSV(jobs);
+
+    const csv = await convertJSONToCSV(jobs);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "jobs_export.csv");
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    return blob;
+
 }
 
 const convertJSONToCSV = async (json) => {

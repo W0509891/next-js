@@ -12,7 +12,8 @@ export function getDb() {
 
     // Reuse existing connection or create new one
     if (!dbInstance) {
-        const dbPath = path.resolve(process.cwd(), 'jobs.sqlite');
+        const dbDir = process.env.DB_DIR || process.cwd();
+        const dbPath = path.resolve(dbDir, 'jobs.sqlite');
         try {
             dbInstance = new DatabaseSync(dbPath);
             console.log('Connected to the local SQLite database using node:sqlite.');

@@ -1,6 +1,5 @@
 'use client'
 
-import Link from "next/link";
 import {useState, useEffect} from "react";
 import {createJobAction, exportToCSV, importFromCSV, updateJobAction} from "../lib/actions";
 import JobPill from "@/components/JobPill";
@@ -200,11 +199,15 @@ const JobsPage = () => {
                 </h1>
                 <div className="flex flex-wrap gap-2 justify-center text-foreground">
                     <button className="px-4 py-2   rounded hover:bg-blue-300 transition-colors">
-                        <a href="/api/download">Download DB</a>
+                        <a href="/api/download/db">Download DB</a>
                     </button>
-                    <button onClick={() => exportToCSV(jobs)}
-                            className="px-4 py-2   rounded hover:bg-green-700 transition-colors">Export CSV
+                    <button className="px-4 py-2   rounded hover:bg-green-700 transition-colors">
+                        <a href="/api/download/csv?q=all">Export CSV</a>
                     </button>
+                    <button className="px-4 py-2   rounded hover:bg-green-500 transition-colors">
+                        <a href="/api/download/csv?q=daily">Get Today</a>
+                    </button>
+
                     <label className="px-4 py-2 rounded hover:bg-yellow-700 transition-colors cursor-pointer">
                         Import CSV
                         <input type="file" accept=".csv" onChange={handleImport} className="hidden"/>

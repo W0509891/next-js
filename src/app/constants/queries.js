@@ -34,11 +34,7 @@ class Queries {
             jobUrl TEXT,
             notes TEXT,
             updatedAt TEXT DEFAULT
-        (
-            datetime
-        (
-            'now'
-        ))
+        (CAST(unixepoch('now') * 1000 AS INTEGER))
             );
     `;
 
@@ -71,6 +67,20 @@ class Queries {
         ORDER BY updatedAt DESC LIMIT 50;
     `
 
+    static GET_JOBS_BY_TIMEFRAME = (time = -7)=> `
+    ${USE_DB}
+    SELECT id,
+           company,
+           title,
+           status,
+           appliedAt,
+           jobUrl,
+           notes
+    FROM jobs
+    WHERE 
+        appliedAt >= unixepoch('now', '${time} days')
+        and status != 'Rejected';
+    `
     static GET_JOB_BY_ID = `
         ${USE_DB}
         SELECT id,
@@ -96,7 +106,7 @@ class Queries {
         UPDATE jobs
         SET ${fields.map((field, index) => `${field} = ?`)
                 .join(', \n').concat(',') }
-            updatedAt = datetime('now')
+            updatedAt = ${new Date().getTime()}
         WHERE id = ?;
     `;
 
@@ -115,8 +125,14 @@ class Queries {
             (SELECT COUNT(*) FROM jobs WHERE status = 'Interview') as interviewCount,
             (SELECT COUNT(*) FROM jobs WHERE status = 'Offer') as offerCount,
             (SELECT COUNT(*) FROM jobs WHERE status = 'Rejected') as rejectedCount,
-            (SELECT COUNT(*) FROM jobs WHERE appliedAt >= date('now', '-7 days')) as appliedThisWeek,
-            (SELECT COUNT(*) FROM jobs WHERE status = 'Interview' AND updatedAt >= date('now', '-7 days')) as interviewsThisWeek;
+            (SELECT COUNT(*) FROM jobs WHERE appliedAt >= unixepoch('now', '-7 days')) as appliedThisWeek,
+            (SELECT COUNT(*) FROM jobs WHERE status = 'Interview' AND updatedAt >= unixepoch('now', '-7 days')) as interviewsThisWeek;
+    `;
+
+    static GET_JOBS_APPLIED_TODAY = `
+        select title, company, url, DATE_APPLIED
+        from jobs_formattedDate
+        where appliedAt >= unixepoch('now', '-1 days');
     `;
 }
 
