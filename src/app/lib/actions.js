@@ -12,21 +12,18 @@ const createJobAction = async (formData) => {
     const company = formData.get("company")
     const title = formData.get("title")
     const status = formData.get("status")
-    const appliedAt = formData.get("appliedAt")
+    const appliedAt = parse_date(formData.get("appliedAt"))
     const jobUrl = formData.get("jobUrl")
     const notes = formData.get("notes")
 
     const result = CreateJobSchema.safeParse({company, title, status, appliedAt, jobUrl})
     if (!result.success) {
         console.log("Validation error:", result.error.flatten());
-        return
+        return {status: false, errors: result.error.flatten()}
     }
     const id = crypto.randomUUID();
-    console.log(id, formData)
-    await executeQuery(Queries.INSERT_JOB, id, company, title, status, parse_date(appliedAt), jobUrl, notes);
-
-    revalidatePath('/jobs')
-    redirect('/jobs')
+    await executeQuery(Queries.INSERT_JOB, id, company, title, status, appliedAt, jobUrl, notes);
+    return {status: true, data: {id, ...result.data}}
 };
 
 const updateJobAction = async (formData) => {
@@ -51,24 +48,22 @@ const updateJobAction = async (formData) => {
     }
 
     const result = UpdateJobSchema.safeParse({id, ...data})
-    if (result.success) {
+    if (!result.success) {
+        console.log("Validation error:", result.error.flatten());
+        return {status: false, errors: result.error.flatten()}
+    }
+    else {
         const fields = Object.keys(data);
         const values = Object.values(data);
         await executeQuery(Queries.UPDATE_JOB(fields), ...values, id);
-        revalidatePath(`/jobs/${id}`)
-        revalidatePath('/jobs')
-        redirect(`/jobs`)
-    }
-    else {
-        console.log("Validation error:", result.error.flatten());
+        console.log("Job updated successfully", {id, ...result.data})
+        return {status: true, data: {id, ...result.data}}
     }
 
 };
 
 const updateStatusAction = async (id, status) => {
     await executeQuery(Queries.UPDATE_JOB(["status"]), status, id);
-    revalidatePath(`/jobs`)
-    redirect(`/jobs`)
 }
 const deleteJobAction = async (formData) => {
     let id;
@@ -80,11 +75,9 @@ const deleteJobAction = async (formData) => {
     
     await executeQuery(Queries.DELETE_JOB, id);
     
-    revalidatePath('/jobs')
     if (!(formData instanceof FormData)) {
         return { success: true };
     }
-    redirect('/jobs')
 }
 
 const exportToCSV = async (q, timeframe) => {

@@ -19,7 +19,6 @@ function Form({action, title, data, onCancel}) {
     const [isValid, setIsValid] = useState(false);
     const [touched, setTouched] = useState({});
 
-    console.log(formData.appliedAt)
     useEffect(() => {
         const schema = data?.id ? UpdateJobSchema : CreateJobSchema;
         const result = schema.safeParse(data?.id ? {...formData, id: data.id} : formData);

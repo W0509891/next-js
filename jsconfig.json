@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
+    "baseUrl": "./",
     "paths": {
-      "@/*": ["./src/*"],
-      "@schemas": ["./schemas/*"],
-      "@components": ["./src/components/*"]
+      "@/*": ["src/*"],
+      "@schemas": ["src/schemas/*"],
+      "@components": ["src/components/*"]
     },
     "strict": true,
     "jsx": "react"

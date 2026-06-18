@@ -5,7 +5,7 @@ import Svg from "./Svg";
 import {deleteJobAction, updateStatusAction} from "@/app/lib/actions";
 import {useState, useEffect} from "react";
 
-function JobPill({job, onEdit, onClick}) {
+function JobPill({job, onEdit, onDelete, onClick ,onStatusChange}) {
 
     const router = useRouter();
     const [status, setStatus] = useState(job.status);
@@ -14,9 +14,8 @@ function JobPill({job, onEdit, onClick}) {
     }, [job.status]);
     const handleStatusChange = async (jobId, newStatus) => {
         try {
-            setStatus(newStatus);
             await updateStatusAction(jobId, newStatus);
-            router.refresh();
+            setStatus(newStatus);
         } catch (error) {
             console.error("Failed to update status:", error);
         }
@@ -26,7 +25,7 @@ function JobPill({job, onEdit, onClick}) {
         <>
             <div className="border border-gray-200 dark:border-gray-800 p-4 rounded-lg hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
                 <div className={`text-foreground flex justify-between items-center cursor-pointer`}>
-                    <div onClick={onClick}>
+                    <div onClick={onClick} className={'w-full'}>
                         <h2 className="text-xl font-bold">{job.company}</h2>
                         <p className="text-gray-600 dark:text-gray-400">{job.title}</p>
                     </div>
@@ -36,12 +35,7 @@ function JobPill({job, onEdit, onClick}) {
                             <Svg use="/edit.svg" className="w-6 h-6" />
                         </button>
                         <button className={"hover:text-red-300"}
-                                onClick={async () => {
-                                    if(confirm("Are you sure you want to delete this job?")) {
-                                        await deleteJobAction(job.id);
-                                        router.refresh();
-                                    }
-                                }}
+                                onClick={onDelete}
                         >
                             <Svg use="/delete.svg" className="w-6 h-6" />
                         </button>

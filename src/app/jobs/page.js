@@ -1,24 +1,24 @@
 'use client'
 
 import {useState, useEffect} from "react";
-import {createJobAction, exportToCSV, importFromCSV, updateJobAction} from "../lib/actions";
+import {createJobAction, deleteJobAction, exportToCSV, importFromCSV, updateJobAction} from "../lib/actions";
 import JobPill from "@/components/JobPill";
 import Form from "@/components/Form";
 import {JobDetails} from "@/components/JobDetails";
-
 const JobsPage = () => {
+
 
     function loadSettings() {
         if (typeof window === 'undefined') return {
             lastPage: 1,
             statusFilter: "All",
-            lastSortConfig: { key: "updatedAt", direction: "desc" }
+            lastSortConfig: {key: "updatedAt", direction: "desc"}
         };
 
         return {
             lastPage: Number(localStorage.getItem('lastPage')) || 1,
             statusFilter: localStorage.getItem('statusFilter') ?? "All",
-            lastSortConfig: JSON.parse(localStorage.getItem('lastSortConfig')) ?? { key: "updatedAt", direction: "desc" }
+            lastSortConfig: JSON.parse(localStorage.getItem('lastSortConfig')) ?? {key: "updatedAt", direction: "desc"}
         };
     }
 
@@ -89,15 +89,9 @@ const JobsPage = () => {
             const link = e.target.closest('a');
             if (link) saveSettings();
         };
-        const handleWindowClose = (e) => {
-            e.preventDefault()
-            saveSettings()
-        }
 
         document.addEventListener('click', handleClick);
-        window.addEventListener('beforeunload', handleWindowClose)
         return () => {
-            window.removeEventListener('beforeunload', handleWindowClose)
             document.removeEventListener('click', handleClick);
         }
     }, [currentPage, statusFilter, sortConfig])
@@ -118,22 +112,56 @@ const JobsPage = () => {
         reader.readAsText(file);
     };
 
+    const handleDelete = async (jobId) => {
+        if (confirm("Are you sure you want to delete this job?")) {
+            await deleteJobAction(jobId);
+        }
+        setJobs(filteredJobs.filter(job => job.id !== jobId));
+    };
 
+    const handleClick = (job) => {
+        if (job) {
+            setSelectedJob(job);
+            setShowDetails(true);
+        }
+    }
+
+    const handleEdit = (job) => {
+        if (job) {
+            setSelectedJob(job);
+            showUpdateJobModal(true);
+        }
+    }
+
+    const handleAddJob = async (formData) => {
+        const res = await createJobAction(formData);
+        if (res.status) {
+            showNewJobModal(false);
+            setJobs([...jobs, res.data]);
+        }
+    }
+
+    const handleUpdateJob = async (formData) => {
+
+        const res = await updateJobAction(formData);
+        if (res.status) {
+            showUpdateJobModal(false);
+            setSelectedJob(null);
+            setJobs(jobs.map(job => job.id === res.data.id ? res.data : job))
+        }
+    };
     return (
         <section className="max-w-4xl mx-auto p-4 relative">
             {showNewJob && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div 
+                    <div
                         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                         onClick={() => showNewJobModal(false)}
                     ></div>
-                    <div className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
-                        <Form 
-                            action={async (formData) => {
-                                await createJobAction(formData);
-                                showNewJobModal(false);
-                                loadJobs();
-                            }} 
+                    <div
+                        className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
+                        <Form
+                            action={async (formData) => handleAddJob(formData)}
                             title={"Add New Job"}
                             onCancel={() => showNewJobModal(false)}
                         />
@@ -143,21 +171,17 @@ const JobsPage = () => {
 
             {showUpdateJob && selectedJob && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div 
+                    <div
                         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                         onClick={() => {
                             showUpdateJobModal(false);
                             setSelectedJob(null);
                         }}
                     ></div>
-                    <div className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
+                    <div
+                        className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
                         <Form
-                            action={async (formData) => {
-                                await updateJobAction(formData);
-                                showUpdateJobModal(false);
-                                setSelectedJob(null);
-                                loadJobs();
-                            }}
+                            action={async (formData) => handleUpdateJob(formData)}
                             title={"Update Job"}
                             data={selectedJob}
                             onCancel={() => {
@@ -171,14 +195,15 @@ const JobsPage = () => {
 
             {showDetails && selectedJob && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div 
+                    <div
                         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                         onClick={() => {
                             setShowDetails(false);
                             setSelectedJob(null);
                         }}
                     ></div>
-                    <div className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
+                    <div
+                        className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
                         <JobDetails
                             job={selectedJob}
                             onClose={() => {
@@ -212,7 +237,8 @@ const JobsPage = () => {
                         Import CSV
                         <input type="file" accept=".csv" onChange={handleImport} className="hidden"/>
                     </label>
-                    <div onClick={() => showNewJobModal(!showNewJob)} className="px-4 py-2  rounded hover:bg-indigo-700 transition-colors">
+                    <div onClick={() => showNewJobModal(!showNewJob)}
+                         className="px-4 py-2  rounded hover:bg-indigo-700 transition-colors">
                         Add Job
                     </div>
                 </div>
@@ -284,9 +310,9 @@ const JobsPage = () => {
                     {importStatus.errors && (
                         <div
                             className={'mb-4 p-4 rounded bg-red-100 text-red-800'}>
-                                <ul className="mt-2 text-sm list-disc list-inside">
-                                    {importStatus.errors.map((err, i) => <li key={i}>{err}</li>)}
-                                </ul>
+                            <ul className="mt-2 text-sm list-disc list-inside">
+                                {importStatus.errors.map((err, i) => <li key={i}>{err}</li>)}
+                            </ul>
                             <button onClick={() => setImportStatus(null)} className="ml-4 font-bold">Close</button>
                         </div>
                     )}
@@ -298,17 +324,12 @@ const JobsPage = () => {
                     <div className={"flex flex-col gap-6"}>
                         <div className="grid grid-cols-1 gap-4">
                             {paginatedJobs.map(job =>
-                                <JobPill 
-                                    key={job.id} 
-                                    job={job} 
-                                    onClick={() => {
-                                        setSelectedJob(job);
-                                        setShowDetails(true);
-                                    }}
-                                    onEdit={() => {
-                                        setSelectedJob(job);
-                                        showUpdateJobModal(true);
-                                    }}
+                                <JobPill
+                                    key={job.id}
+                                    job={job}
+                                    onClick={() => handleClick(job)}
+                                    onEdit={() => handleEdit(job)}
+                                    onDelete={async () => handleDelete(job.id)}
                                 />
                             )
                             }
