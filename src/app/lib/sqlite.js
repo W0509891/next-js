@@ -30,13 +30,29 @@ export function getDb() {
 export function closeDb() {
     if (dbInstance) {
         try {
+            // 1. Force a checkpoint to merge WAL data into the main database file
+            // TRUNCATE will merge the changes and then shrink the .wal file to 0 bytes
+            dbInstance.prepare('PRAGMA wal_checkpoint(TRUNCATE)').run();
+            console.log('WAL checkpoint completed (merged .wal and .shm).');
+
             dbInstance.close();
             console.log('Database connection closed.');
         } catch (err) {
-            console.warn('Error closing database connection:', err.message);
+            console.warn('Error during database shutdown:', err.message);
         }
         dbInstance = null;
     }
+}
+
+// 2. Listen for process termination signals to ensure cleanup happens
+if (typeof process !== 'undefined') {
+    ['SIGINT', 'SIGTERM', 'SIGHUP'].forEach(signal => {
+        process.on(signal, () => {
+            console.log(`Received ${signal}, closing database...`);
+            closeDb();
+            process.exit(0);
+        });
+    });
 }
 
 // Helper function to execute a query with proper error handling

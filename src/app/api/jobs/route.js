@@ -10,12 +10,13 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS.split(';');
 
 function getCorsHeaders(req) {
     const origin = req.headers.get('origin');
+    const isExtension = origin?.startsWith('chrome-extension://');
     const headers = {
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     };
 
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin) || isExtension) {
         headers['Access-Control-Allow-Origin'] = origin;
     }
 
