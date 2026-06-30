@@ -3,7 +3,7 @@
 import {revalidatePath} from "next/cache";
 import {redirect} from "next/navigation";
 import {executeQuery} from "./sqlite";
-import {Queries} from "../constants/queries";
+import {Queries} from "./queries";
 import {CreateJobSchema, UpdateJobSchema} from "@/schemas/JobSchema";
 import {parse_date} from "@/app/lib/helpers";
 
