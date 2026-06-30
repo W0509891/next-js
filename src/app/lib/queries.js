@@ -105,7 +105,8 @@ class Queries {
         ${USE_DB}
         UPDATE jobs
         SET ${fields.map((field, index) => `${field} = ?`)
-                .join(', \n').concat(',') }
+                .join(', \n') }
+        ${fields.length > 0 ? ',' : ''}
             updatedAt = ${new Date().getTime()}
         WHERE id = ?;
     `;

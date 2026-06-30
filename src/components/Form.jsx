@@ -3,7 +3,8 @@ import Link from "next/link";
 import {useState, useEffect} from "react";
 import {CreateJobSchema, UpdateJobSchema} from "@/schemas/JobSchema";
 import {stringify_date} from "@/app/lib/helpers";
-import {STATUSES} from "@/app/lib/constants";
+import {STATUSES} from "../app/lib/constants.ts";
+import * as z from "zod";
 
 function Form({action, title, data, onCancel}) {
 
@@ -15,7 +16,11 @@ function Form({action, title, data, onCancel}) {
         status: data?.status || "Applied",
         appliedAt: stringify_date(data?.appliedAt),
         jobUrl: data?.jobUrl || "",
-        notes: data?.notes || ""
+        notes: data?.notes || "",
+        jobPostingPdf: data?.jobPostingPdf || "",
+        jobPostingHtml: data?.jobPostingHtml|| "",
+        usedResume: data?.usedResume || "",
+        usedCoverLetter: data?.usedCoverLetter || ""
     });
     const [isValid, setIsValid] = useState(false);
     const [touched, setTouched] = useState({});
@@ -41,9 +46,20 @@ function Form({action, title, data, onCancel}) {
         setTouched(prev => ({...prev, [name]: true}));
     };
 
+    const handleSubmit = async (e) => {
+       // Let Next.js handle it if action is provided
+        e.preventDefault();
+        const schema = data?.id ? UpdateJobSchema : CreateJobSchema;
+        const result = schema.safeParse(data?.id ? {...formData, id: data.id} : formData);
+        
+        if (result.success) {
+            action(result.data);
+        }
+    };
+
     return (
         <div className="w-full max-w-2xl mx-auto p-4">
-            <form action={action} className="bg-surface text-foreground
+            <form onSubmit={handleSubmit} className="bg-surface text-foreground
             rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 p-8">
 
                 <div className="flex flex-col gap-2">
@@ -68,7 +84,6 @@ function Form({action, title, data, onCancel}) {
                         )}
                     </div>
 
-                    {data && <input type="hidden" name="id" value={data?.id}/>}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-2 ">
@@ -169,6 +184,22 @@ function Form({action, title, data, onCancel}) {
                         </div>
                     </div>
 
+                    {/*PDF AND RESUME CV USED*/}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-2">
+                            REUME
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            CV
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            JObPOSting
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            html gile
+                        </div>
+                    </div>
+
 {/*
                     <div className="flex flex-col gap-2">
                         <label htmlFor="notes"
@@ -192,6 +223,7 @@ function Form({action, title, data, onCancel}) {
                     >
                         {data ? "Update Application" : "Save Job Application"}
                     </button>
+                    {data?.id && <input type="hidden" name="id" value={data.id}/>}
                 </div>
 
             </form>

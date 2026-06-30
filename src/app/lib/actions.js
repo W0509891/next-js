@@ -9,12 +9,12 @@ import {parse_date} from "@/app/lib/helpers";
 
 
 const createJobAction = async (formData) => {
-    const company = formData.get("company")
-    const title = formData.get("title")
-    const status = formData.get("status")
-    const appliedAt = parse_date(formData.get("appliedAt"))
-    const jobUrl = formData.get("jobUrl")
-    const notes = formData.get("notes")
+    const company = formData["company"]
+    const title = formData["title"]
+    const status = formData["status"]
+    const appliedAt = parse_date(formData["appliedAt"])
+    const jobUrl = formData["jobUrl"]
+    const notes = formData["notes"]
 
     const result = CreateJobSchema.safeParse({company, title, status, appliedAt, jobUrl})
     if (!result.success) {
@@ -27,7 +27,8 @@ const createJobAction = async (formData) => {
 };
 
 const updateJobAction = async (formData) => {
-    const id = formData.get("id")
+    console.log("Update job action called with formData:", formData);
+    const id = formData["id"]
     if (!id) {
         console.error("No ID provided for update");
         return;
@@ -35,14 +36,14 @@ const updateJobAction = async (formData) => {
 
     const data = {};
     const updatableFields = ["company", "title", "status", "appliedAt", "jobUrl", "notes"];
-    
+
     for (const field of updatableFields) {
-        if (formData.has(field)) {
+        if (formData[field] !== undefined && formData[field] !== null && formData[field] !== "") {
             if (field === "appliedAt") {
-                data[field] = parse_date(formData.get(field));
+                data[field] = parse_date(formData[field]);
             }
             else {
-            data[field] = formData.get(field);
+            data[field] = formData[field];
             }
         }
     }
@@ -68,13 +69,13 @@ const updateStatusAction = async (id, status) => {
 const deleteJobAction = async (formData) => {
     let id;
     if (formData instanceof FormData) {
-        id = formData.get("id")
+        id = formData["id"]
     } else {
         id = formData;
     }
-    
+
     await executeQuery(Queries.DELETE_JOB, id);
-    
+
     if (!(formData instanceof FormData)) {
         return { success: true };
     }
@@ -145,7 +146,8 @@ const importFromCSV = async (csvText) => {
 
     // Insert valid jobs
     for (const job of jobs) {
-        await executeQuery(Queries.INSERT_JOB, job.company, job.title, job.status, job.appliedAt, job.jobUrl, job.notes);
+        const id = job.id || crypto.randomUUID();
+        await executeQuery(Queries.INSERT_JOB, id, job.company, job.title, job.status, job.appliedAt, job.jobUrl, job.notes);
     }
     revalidatePath('/jobs')
 
@@ -155,6 +157,12 @@ const importFromCSV = async (csvText) => {
         errors: errors.length > 0 ? errors : null
     };
 }
+
+const uploadToBlobStorage = async (dir_name, file) => {
+    const blob = await file.arrayBuffer();
+    const blobUrl = URL.createObjectURL(new Blob([blob]));
+    return blobUrl;
+};
 
 export {createJobAction, updateJobAction, deleteJobAction, exportToCSV, importFromCSV, executeQuery,
     updateStatusAction}
