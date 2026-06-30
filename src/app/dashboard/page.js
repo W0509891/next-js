@@ -1,5 +1,5 @@
 import {executeQuery} from "../lib/sqlite";
-import {Queries} from "../constants/queries";
+import {Queries} from "@/app/lib/queries";
 import {metrics as JobMetrics} from "@/schemas/JobSchema";
 
 export default async function DashboardPage() {
@@ -7,6 +7,9 @@ export default async function DashboardPage() {
     const metrics = metricsData[0] || JobMetrics;
 
     const statusData = [
+        { label: 'Total', count: metrics.totalJobs, color: 'bg-gray-500' },
+        { label: 'Drafts', count: 0, color: 'bg-gray-500' },
+        { label: 'No Response', count: 0, color: 'bg-gray-500' },
         { label: 'Applied', count: metrics.appliedCount, color: 'bg-blue-500' },
         { label: 'Interview', count: metrics.interviewCount, color: 'bg-yellow-500' },
         { label: 'Offer', count: metrics.offerCount, color: 'bg-green-500' },

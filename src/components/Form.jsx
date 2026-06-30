@@ -3,6 +3,7 @@ import Link from "next/link";
 import {useState, useEffect} from "react";
 import {CreateJobSchema, UpdateJobSchema} from "@/schemas/JobSchema";
 import {stringify_date} from "@/app/lib/helpers";
+import {STATUSES} from "@/app/lib/constants";
 
 function Form({action, title, data, onCancel}) {
 
@@ -123,7 +124,7 @@ function Form({action, title, data, onCancel}) {
                                  focus:ring-blue-500 focus:border-transparent outline-none transition-all 
                                  appearance-none cursor-pointer ${statusColor(formData.status)}`}
                         >
-                            {["Applied", "Interview", "Offer", "Rejected"].map(status => (
+                            {STATUSES.map(status => (
                                 <option key={status} className={statusColor(status)}>
                                     {status}
                                 </option>

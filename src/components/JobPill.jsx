@@ -4,6 +4,7 @@ import {useRouter} from "next/navigation";
 import Svg from "./Svg";
 import {deleteJobAction, updateStatusAction} from "@/app/lib/actions";
 import {useState, useEffect} from "react";
+import {STATUSES} from "@/app/lib/constants";
 
 function JobPill({job, onEdit, onDelete, onClick ,onStatusChange}) {
 
@@ -46,7 +47,7 @@ function JobPill({job, onEdit, onDelete, onClick ,onStatusChange}) {
                                 value={status}
                                 onChange={e => handleStatusChange(job.id, e.target.value)}
                         >
-                            {["Applied", "Interview", "Offer", "Rejected"].map(status => (
+                            {STATUSES.map(status => (
                                 <option key={status} value={status}
                                         className={statusColor(status)}>
                                     {status}

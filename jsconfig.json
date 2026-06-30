@@ -4,7 +4,8 @@
     "paths": {
       "@/*": ["src/*"],
       "@schemas": ["src/schemas/*"],
-      "@components": ["src/components/*"]
+      "@components": ["src/components/*"],
+      "@lib": ["src/app/lib/*"]
     },
     "strict": true,
     "jsx": "react"

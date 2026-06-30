@@ -1,5 +1,5 @@
 import * as z from 'zod';
-
+import {STATUSES} from "@/app/lib/constants";
 export const JobSchema = z.object({
     id: z.union([z.string(), z.number()]).optional(),
 
@@ -11,7 +11,7 @@ export const JobSchema = z.object({
         .min(1, "Surely The company has a name and it's not this short, right?")
         .max(100, "Company is too long"),
 
-    status: z.enum(["Applied", "Interview", "Offer", "Rejected"]),
+    status: z.enum(STATUSES),
 
     notes: z.string()
         .max(1000, "Notes are too long")

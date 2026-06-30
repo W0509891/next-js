@@ -1,8 +1,8 @@
 import {readFile} from "node:fs/promises";
 import path from "node:path";
+import {dbPath} from "@/app/lib/sqlite";
 
 export async function GET() {
-    const dbPath = path.resolve(process.cwd(), "jobs.sqlite");
 
     try {
         const fileBuffer = await readFile(dbPath);

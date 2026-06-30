@@ -4,6 +4,7 @@ import { statusColor } from "@/schemas/Style";
 import { updateStatusAction } from "@/app/lib/actions";
 import { useRouter } from "next/navigation";
 import {stringify_date} from "@/app/lib/helpers";
+import {STATUSES} from "@/app/lib/constants";
 
 export const JobDetails = ({ job, onEdit, onClose }) => {
     const router = useRouter();
@@ -103,7 +104,7 @@ const DetailItem = ({ label, value, onEditClick, isStatus = false, status, handl
                 onChange={(e) => handleStatusChange(e.target.value)}
                 className={`mt-1 self-start rounded-full px-3 py-1 text-sm font-medium outline-none transition-colors appearance-none cursor-pointer ${statusColor(status)}`}
             >
-                {["Applied", "Interview", "Offer", "Rejected"].map(s => (
+                {STATUSES.map(s => (
                     <option key={s} value={s} className={statusColor(s)}>
                         {s}
                     </option>

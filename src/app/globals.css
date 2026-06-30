@@ -76,6 +76,12 @@ input, textarea {
   color: #991b1b !important;
 }
 
+.status-draft {}
+
+.status-pending {}
+
+.status-accepted {}
+
 /* Dark mode overrides */
 @media (prefers-color-scheme: dark) {
   .status-applied {

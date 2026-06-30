@@ -1,5 +1,5 @@
 import {executeQuery} from "../../lib/sqlite";
-import {Queries} from "../../constants/queries";
+import {Queries} from "../../lib/queries";
 import {deleteJobAction} from "../../lib/actions";
 import Link from "next/link";
 import {statusColor} from "@/schemas/Style";

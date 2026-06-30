@@ -1,7 +1,7 @@
 //route.js
 
-import { executeQuery } from '../../lib/sqlite';
-import { Queries } from '../../constants/queries';
+import { executeQuery } from '@/app/lib/sqlite';
+import { Queries } from '@/app/lib/queries';
 import { CreateJobSchema, UpdateJobSchema } from '@/schemas/JobSchema';
 import {NextResponse} from "next/server";
 import {parse_date} from "@/app/lib/helpers";
