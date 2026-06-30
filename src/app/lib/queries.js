@@ -1,6 +1,20 @@
 const USE_DB = `USE DATABASE jobs.sqlite;`;
 class Queries {
-
+   static FIELDS = [
+        "id",
+        "company",
+        "title",
+        "status",
+        "appliedAt",
+        "jobUrl",
+        "notes",
+        "updatedAt",
+        "resume_used",
+        "cover_letter",
+        "posting_pdf",
+        "posting_html"
+    ]
+    static getFields = this.FIELDS.join(", ");
 
     static CREATE_TABLE = `
         ${USE_DB}
@@ -40,28 +54,14 @@ class Queries {
 
     static GET_JOBS = `
         ${USE_DB}
-        SELECT id,
-               company,
-               title,
-               status,
-               appliedAt,
-               jobUrl,
-               notes,
-               updatedAt
+        SELECT ${this.getFields}
         FROM jobs
         ORDER BY updatedAt DESC LIMIT 50;
     `;
 
     static GET_JOBS_NOT_REJECTED = `
         ${USE_DB}
-        SELECT id,
-               company,
-               title,
-               status,
-               appliedAt,
-               jobUrl,
-               notes,
-               updatedAt
+        SELECT ${this.getFields}
         FROM jobs
         WHERE status != 'Rejected'
         ORDER BY updatedAt DESC LIMIT 50;
@@ -69,13 +69,7 @@ class Queries {
 
     static GET_JOBS_BY_TIMEFRAME = (time = -7)=> `
     ${USE_DB}
-    SELECT id,
-           company,
-           title,
-           status,
-           appliedAt,
-           jobUrl,
-           notes
+    SELECT ${this.getFields}
     FROM jobs
     WHERE 
         appliedAt >= unixepoch('now', '${time} days')
@@ -83,14 +77,7 @@ class Queries {
     `
     static GET_JOB_BY_ID = `
         ${USE_DB}
-        SELECT id,
-               company,
-               title,
-               status,
-               appliedAt,
-               jobUrl,
-               notes,
-               updatedAt
+        SELECT ${this.getFields}
         FROM jobs
         WHERE id = ?;
     `;

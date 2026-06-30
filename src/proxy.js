@@ -6,7 +6,8 @@ export const proxy = async (req) => {
 
         if (ctype.includes('application/json')) {
             const body = await req.json();
-            console.log('JSON body:', safeStringify(body));
+            console.log('JSON body:', body);
+
         } else if (ctype.includes('multipart/form-data')) {
             const fd = await req.formData();
             const logged = {};
