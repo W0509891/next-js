@@ -1,5 +1,7 @@
 import * as z from 'zod';
-import {STATUSES} from "@/app/lib/constants";
+import {STATUSES} from "../app/lib/constants.ts";
+
+const ACCEPTED_FILE_TYPES = ["application/pdf", "text/html"];
 export const JobSchema = z.object({
     id: z.union([z.string(), z.number()]).optional(),
 
@@ -21,13 +23,19 @@ export const JobSchema = z.object({
         .max(1000, "URL is too long")
         .optional(),
 
+    usedResume: z.instanceof(File).optional().refine(file => ACCEPTED_FILE_TYPES.includes(file?.type)),
+    jobPostingPdf: z.instanceof(File).optional().refine(file => ACCEPTED_FILE_TYPES[0].includes(file?.type)),
+    jobPostingHtml: z.instanceof(File).optional().refine(file => ACCEPTED_FILE_TYPES[1].includes(file?.type)),
+    usedCoverLetter: z.instanceof(File).optional().refine(file => ACCEPTED_FILE_TYPES.includes(file?.type)),
+
     appliedAt: z.union([z.string(), z.number()]).optional(),
     updatedAt: z.union([z.string(), z.number()]).optional(),
 });
 
-export const CreateJobSchema = JobSchema.omit({id: true, updatedAt: true});
+export const CreateJobSchema = JobSchema.omit({id: true, updatedAt: true}).partial();
 export const UpdateJobSchema = JobSchema.omit({updatedAt: true, notes: true}).partial();
 
+export const ValidateFile =JobSchema.pick({usedResume: true, usedCoverLetter: true, jobPostingHtml: true, jobPostingPdf: true}).partial();
 
 export const metrics = {
     totalJobs: 0,

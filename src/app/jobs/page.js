@@ -161,7 +161,7 @@ const JobsPage = () => {
                     <div
                         className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
                         <Form
-                            action={async (formData) => handleAddJob(formData)}
+                            action={async (formData) => await handleAddJob(formData)}
                             title={"Add New Job"}
                             onCancel={() => showNewJobModal(false)}
                         />

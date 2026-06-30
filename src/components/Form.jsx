@@ -1,7 +1,7 @@
 import {statusColor} from "@/schemas/Style";
 import Link from "next/link";
 import {useState, useEffect} from "react";
-import {CreateJobSchema, UpdateJobSchema} from "@/schemas/JobSchema";
+import {CreateJobSchema, UpdateJobSchema, ValidateFile} from "@/schemas/JobSchema";
 import {stringify_date} from "@/app/lib/helpers";
 import {STATUSES} from "../app/lib/constants.ts";
 import * as z from "zod";
@@ -17,10 +17,10 @@ function Form({action, title, data, onCancel}) {
         appliedAt: stringify_date(data?.appliedAt),
         jobUrl: data?.jobUrl || "",
         notes: data?.notes || "",
-        jobPostingPdf: data?.jobPostingPdf || "",
-        jobPostingHtml: data?.jobPostingHtml|| "",
-        usedResume: data?.usedResume || "",
-        usedCoverLetter: data?.usedCoverLetter || ""
+        jobPostingPdf: data?.jobPostingPdf || undefined,
+        jobPostingHtml: data?.jobPostingHtml || undefined,
+        usedResume: data?.usedResume || undefined,
+        usedCoverLetter: data?.usedCoverLetter || undefined
     });
     const [isValid, setIsValid] = useState(false);
     const [touched, setTouched] = useState({});
@@ -41,17 +41,31 @@ function Form({action, title, data, onCancel}) {
         setFormData(prev => ({...prev, [name]: value}));
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const ok = ValidateFile.safeParse(file).success;
+            if (ok) {
+                setFormData(prev => ({...prev, [e.target.name]: file}));
+                setErrors(prev => ({...prev, [e.target.name]: undefined}));
+            } else {
+                setErrors(prev => ({...prev, [e.target.name]: ["Only PDF or HTML files are allowed"]}));
+            }
+            console.log(formData)
+        }
+    }
+
     const handleBlur = (e) => {
         const {name} = e.target;
         setTouched(prev => ({...prev, [name]: true}));
     };
 
     const handleSubmit = async (e) => {
-       // Let Next.js handle it if action is provided
+        // Let Next.js handle it if action is provided
         e.preventDefault();
         const schema = data?.id ? UpdateJobSchema : CreateJobSchema;
         const result = schema.safeParse(data?.id ? {...formData, id: data.id} : formData);
-        
+
         if (result.success) {
             action(result.data);
         }
@@ -59,7 +73,7 @@ function Form({action, title, data, onCancel}) {
 
     return (
         <div className="w-full max-w-2xl mx-auto p-4">
-            <form onSubmit={handleSubmit} className="bg-surface text-foreground
+            <form onSubmit={handleSubmit} encType={"multipart/form-data"} className="bg-surface text-foreground
             rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 p-8">
 
                 <div className="flex flex-col gap-2">
@@ -133,8 +147,8 @@ function Form({action, title, data, onCancel}) {
                             value={formData.status}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            className={`w-full px-4 py-2 rounded-lg border ${errors.status && touched.status ? 
-                                'border-red-500' : 
+                            className={`w-full px-4 py-2 rounded-lg border ${errors.status && touched.status ?
+                                'border-red-500' :
                                 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 focus:ring-2
                                  focus:ring-blue-500 focus:border-transparent outline-none transition-all 
                                  appearance-none cursor-pointer ${statusColor(formData.status)}`}
@@ -184,23 +198,70 @@ function Form({action, title, data, onCancel}) {
                         </div>
                     </div>
 
-                    {/*PDF AND RESUME CV USED*/}
+                    {/* Resume upload (optional) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                         <div className="flex flex-col gap-2">
-                            REUME
+                            <label htmlFor="usedResume"
+                                   className="text-sm font-semibold text-gray-700 dark:text-gray-300">Resume (PDF or
+                                HTML, optional)</label>
+                            <input
+                                id="usedResume"
+                                name="usedResume"
+                                type="file"
+                                accept=".pdf,.html,text/html,application/pdf"
+                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                onChange={handleFileChange}
+                            />
+                            {errors.usedResume && <p className="text-red-500 text-xs">{errors.usedResume[0]}</p>}
                         </div>
+
                         <div className="flex flex-col gap-2">
-                            CV
+                            <label htmlFor="usedCoverLetter"
+                                   className="text-sm font-semibold text-gray-700 dark:text-gray-300">Cover Letter (PDF or
+                                HTML, optional)</label>
+                            <input
+                                id="usedCoverLetter"
+                                name="usedCoverLetter"
+                                type="file"
+                                accept=".pdf,.html,text/html,application/pdf"
+                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                onChange={handleFileChange}
+                            />
+                            {errors.usedCoverLetter && <p className="text-red-500 text-xs">{errors.usedCoverLetter[0]}</p>}
                         </div>
+
                         <div className="flex flex-col gap-2">
-                            JObPOSting
+                            <label htmlFor="jobPostingHtml"
+                                   className="text-sm font-semibold text-gray-700 dark:text-gray-300">JobPosting (HTML, optional)</label>
+                            <input
+                                id="jobPostingHtml"
+                                name="jobPostingHtml"
+                                type="file"
+                                accept=".html,text/html"
+                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                onChange={handleFileChange}
+                            />
+                            {errors.jobPostingHtml && <p className="text-red-500 text-xs">{errors.jobPostingHtml[0]}</p>}
                         </div>
+
                         <div className="flex flex-col gap-2">
-                            html gile
+                            <label htmlFor="jobPostingPdf"
+                                   className="text-sm font-semibold text-gray-700 dark:text-gray-300">JobPosting (PDF optional)</label>
+                            <input
+                                id="jobPostingPdf"
+                                name="jobPostingPdf"
+                                type="file"
+                                accept=".pdf,application/pdf"
+                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                onChange={handleFileChange}
+                            />
+                            {errors.jobPostingPdf && <p className="text-red-500 text-xs">{errors.jobPostingPdf[0]}</p>}
                         </div>
                     </div>
 
-{/*
+
+                    {/*
                     <div className="flex flex-col gap-2">
                         <label htmlFor="notes"
                                className="text-sm font-semibold text-gray-700 dark:text-gray-300">Notes</label>

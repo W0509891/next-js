@@ -1,3 +1,5 @@
+import {ValidateFile} from "@/schemas/JobSchema.js";
+
 export const stringify_date = (date, format = 1) => {
     const now = date? new Date(parseInt(date)) : new Date();
     const year = now.getFullYear();
@@ -13,3 +15,10 @@ export const stringify_date = (date, format = 1) => {
 };
 
 export const parse_date = (dateString) => new Date(dateString).getTime();
+
+export const isAllowedFile = (file) => {
+    const typeOk = ValidateFile.safeParse(file);
+    return typeOk.success;
+}
+
+export const sanitizeSegment = (s) => (s || '').toString().trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_\-]/g, '');

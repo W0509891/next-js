@@ -97,8 +97,8 @@ class Queries {
 
     static INSERT_JOB = `
         ${USE_DB}
-        INSERT INTO jobs (id, company, title, status, appliedAt, jobUrl, notes)
-  VALUES (?, ?, ?, ?, ?, ?, ?);
+        INSERT INTO jobs (id, company, title, status, appliedAt, jobUrl, notes, resume_used, cover_letter, posting_pdf, posting_html)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `;
 
     static UPDATE_JOB = (fields)=> `
