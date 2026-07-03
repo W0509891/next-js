@@ -11,79 +11,49 @@ import { BlobServiceClient } from "@azure/storage-blob";
 
 const createJobAction = async (formData) => {
     console.log("Create job action called with formData:", formData);
-    const company = formData["company"]
-    const title = formData["title"]
-    const status = formData["status"]
-    const appliedAt = parse_date(formData["appliedAt"]) 
-    const jobUrl = formData["jobUrl"]
-    const notes = formData["notes"]
+    const {company, title, status, jobUrl, notes } = formData
+    const appliedAt = parse_date(formData["appliedAt"])
 
-    const resume = formData['usedResume'] ?? undefined;
-    const cover_leter = formData['usedCoverLetter'] ?? undefined;
-    const jobPostingHTML = formData['jobPostingHtml'] ?? undefined;
-    const jobPostingPdf = formData['jobPostingPdf'] ?? undefined;
+    const usedResume = formData['usedResume'];
+    const usedCoverLetter = formData['usedCoverLetter'];
+    const jobPostingHTML = formData['jobPostingHtml'];
+    const jobPostingPdf = formData['jobPostingPdf'];
 
-    const result = CreateJobSchema.safeParse({company, title, status, appliedAt, jobUrl, resume})
+    const result = CreateJobSchema.safeParse({company, title, status, appliedAt, jobUrl, notes})
     if (!result.success) {
         console.log("Validation error:", result.error.flatten());
         return {status: false, errors: result.error.flatten()}
     }
     const id = crypto.randomUUID();
 
-    let resume_used = null;
-    let posting_html = null;
-    let posting_pdf = null;
-    let cover_letter = null;
+    let {usedResumeUrl, usedCoverLetterUrl, jobPostingHTMLUrl, jobPostingPdfUrl} =
+        await batchUplaodDOcs({ company, jobId: id, title }, usedResume, usedCoverLetter, jobPostingHTML , jobPostingPdf);
 
-    // Optional resume upload
-    try {
-        if (resume && typeof resume === 'object' && resume.size > 0) {
-            const ok = isAllowedFile(resume);
-            if (!ok) {
-                return { status: false, errors: { resume: ["Only PDF or HTML files are allowed"] } };
-            }
-            resume_used = await uploadToBlobStorage({ company, jobId: id, title }, resume)
-        }
-
-        if(cover_leter && typeof cover_leter === 'object' && cover_leter.size > 0) {
-            const ok = isAllowedFile(cover_leter);
-            if (!ok) {
-                return { status: false, errors: { resume: ["Only PDF or HTML files are allowed"] } };
-            }
-            cover_letter = await uploadToBlobStorage({ company, jobId: id, title }, cover_leter)
-        }
-
-        if(jobPostingHTML && typeof jobPostingHTML === 'object' && jobPostingHTML.size > 0) {
-            const ok = isAllowedFile(jobPostingHTML);
-            if (!ok) {
-                return { status: false, errors: { resume: ["Only PDF or HTML files are allowed"] } };
-            }
-            posting_html = await uploadToBlobStorage({ company, jobId: id, title }, jobPostingHTML)
-        }
-
-        if(jobPostingPdf && typeof jobPostingPdf === 'object' && jobPostingPdf.size > 0) {
-            const ok = isAllowedFile(jobPostingPdf);
-            if (!ok) {
-                return { status: false, errors: { resume: ["Only PDF or HTML files are allowed"] } };
-            }
-            posting_pdf = await uploadToBlobStorage({ company, jobId: id, title }, jobPostingPdf)
-        }
-    } catch (e) {
-        console.error('Resume upload failed:', e);
-        // Do not block job creation on upload error; proceed
-    }
-
-    await executeQuery(Queries.INSERT_JOB, id, company, title, status, appliedAt, jobUrl, notes, resume_used, posting_html, posting_pdf, cover_letter);
+    await executeQuery(Queries.INSERT_JOB, id, company, title, status, appliedAt, jobUrl, notes, usedResumeUrl, usedCoverLetterUrl, jobPostingPdfUrl, jobPostingHTMLUrl);
     return {status: true, data: {id, ...result.data}}
 };
 
 const updateJobAction = async (formData) => {
     console.log("Update job action called with formData:", formData);
-    const id = formData["id"]
+    const {id, company, title} = formData
     if (!id) {
         console.error("No ID provided for update");
         return;
     }
+
+    const blobMap = {
+        usedResumeUrl: "resume_used",
+        usedCoverLetterUrl: "cover_letter",
+        jobPostingHTMLUrl: "posting_html",
+        jobPostingPdfUrl: "posting_pdf"
+    }
+    const usedResume = formData['usedResume'];
+    const usedCoverLetter = formData['usedCoverLetter'];
+    const jobPostingHTML = formData['jobPostingHtml'];
+    const jobPostingPdf = formData['jobPostingPdf'];
+
+    let urls =
+        await batchUplaodDOcs({ company, jobId: id, title }, usedResume, usedCoverLetter, jobPostingHTML , jobPostingPdf);
 
     const data = {};
     const updatableFields = ["company", "title", "status", "appliedAt", "jobUrl", "notes"];
@@ -99,53 +69,41 @@ const updateJobAction = async (formData) => {
         }
     }
 
+    for (const [key, value] of Object.entries(urls)) {
+        if (urls[key]) {
+            let nu_key = blobMap[key];
+            data[nu_key] = value;
+        }
+    }
+
     const result = UpdateJobSchema.safeParse({id, ...data})
     if (!result.success) {
         console.log("Validation error:", result.error.flatten());
         return {status: false, errors: result.error.flatten()}
     }
+
     else {
         const fields = Object.keys(data);
         const values = Object.values(data);
+        console.log("innit",values)
         await executeQuery(Queries.UPDATE_JOB(fields), ...values, id);
-        console.log("Job updated successfully", {id, ...result.data})
-
-        // Optional resume upload on update
-        try {
-            const resume = formData?.get ? formData.get('resume') : undefined;
-            if (resume && typeof resume === 'object' && resume.size > 0) {
-                const ok = isAllowedFile(resume);
-                if (!ok) {
-                    return { status: false, errors: { resume: ["Only PDF or HTML files are allowed"] } };
-                }
-                const company = data.company ?? formData["company"]; // prefer updated value
-                const title = data.title ?? formData["title"]; // prefer updated value
-                await uploadToBlobStorage({ company, jobId: id, title }, resume);
-            }
-        } catch (e) {
-            console.error('Resume upload failed (update):', e);
-        }
-        return {status: true, data: {id, ...result.data}}
+        console.log("Job updated successfully", data)
+        // return {status: true, data: {id, ...result.data}}
     }
-
 };
 
 const updateStatusAction = async (id, status) => {
     await executeQuery(Queries.UPDATE_JOB(["status"]), status, id);
 }
 const deleteJobAction = async (formData) => {
-    let id;
-    if (formData instanceof FormData) {
-        id = formData["id"]
-    } else {
-        id = formData;
-    }
+    const {id} = formData;
 
+    if (!id) {
+        return { success: false, error: "No ID provided" };
+    }
     await executeQuery(Queries.DELETE_JOB, id);
-
-    if (!(formData instanceof FormData)) {
         return { success: true };
-    }
+
 }
 
 const exportToCSV = async (q, timeframe) => {
@@ -253,5 +211,51 @@ const uploadToBlobStorage = async ({ company, jobId, title }, file) => {
     return blockBlobClient.url;
 };
 
+async function batchUplaodDOcs (job, usedResume, usedCoverLetter, jobPostingHTML , jobPostingPdf){
+    let urls = {
+        usedResumeUrl: null,
+        usedCoverLetterUrl: null,
+        jobPostingHTMLUrl: null,
+        jobPostingPdfUrl: null
+    }
+
+    try {
+        if (usedResume && typeof usedResume === 'object' && usedResume.size > 0) {
+            const ok = isAllowedFile(usedResume);
+            if (!ok) {
+                return { status: false, errors: { resume: ["Only PDF or HTML files are allowed"] } };
+            }
+            urls.usedResumeUrl = await uploadToBlobStorage(job, usedResume)
+        }
+
+        if(usedCoverLetter && typeof usedCoverLetter === 'object' && usedCoverLetter.size > 0) {
+            const ok = isAllowedFile(usedCoverLetter);
+            if (!ok) {
+                return { status: false, errors: { resume: ["Only PDF or HTML files are allowed"] } };
+            }
+            urls.usedCoverLetterUrl = await uploadToBlobStorage(job, usedCoverLetter)
+        }
+
+        if(jobPostingHTML && typeof jobPostingHTML === 'object' && jobPostingHTML.size > 0) {
+            const ok = isAllowedFile(jobPostingHTML);
+            if (!ok) {
+                return { status: false, errors: { resume: ["Only PDF or HTML files are allowed"] } };
+            }
+            urls.jobPostingHTMLUrl = await uploadToBlobStorage(job, jobPostingHTML)
+        }
+
+        if(jobPostingPdf && typeof jobPostingPdf === 'object' && jobPostingPdf.size > 0) {
+            const ok = isAllowedFile(jobPostingPdf);
+            if (!ok) {
+                return { status: false, errors: { resume: ["Only PDF or HTML files are allowed"] } };
+            }
+            urls.jobPostingHTMLUrl = await uploadToBlobStorage(job, jobPostingPdf)
+        }
+        return urls
+    } catch (e) {
+        console.error('Resume upload failed:', e);
+        // Do not block job creation on upload error; proceed
+    }
+}
 export {createJobAction, updateJobAction, deleteJobAction, exportToCSV, importFromCSV, executeQuery,
     updateStatusAction}

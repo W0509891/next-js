@@ -5,6 +5,7 @@ import { Queries } from '@/app/lib/queries';
 import { CreateJobSchema, UpdateJobSchema } from '@/schemas/JobSchema';
 import {NextResponse} from "next/server";
 import {parse_date} from "@/app/lib/helpers";
+import {createJobAction} from "@/app/lib/actions.js";
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS.split(';');
 
@@ -36,15 +37,17 @@ export async function GET(req) {
 export async function POST(req) {
     const body = await req.json();
     const result = CreateJobSchema.safeParse(body);
-    
+
     if (!result.success) {
         return NextResponse.json({ errors: result.error.flatten() }, { status: 400, headers: getCorsHeaders(req) });
     }
 
-    const { company, title, status, appliedAt, jobUrl, notes } = result.data;
-    const id = crypto.randomUUID();
-    await executeQuery(Queries.INSERT_JOB, id, company, title, status, parse_date(appliedAt), jobUrl, notes);
-    return NextResponse.json({ ok: true, id }, { status: 201, headers: getCorsHeaders(req) });
+    const response = await createJobAction(result.data)
+    if (!response.status){
+        return NextResponse.json({ errors: response.errors }, { status: 400, headers: getCorsHeaders(req) });
+    }
+
+    return NextResponse.json({ ok: response.status, data: response.data }, { status: 201, headers: getCorsHeaders(req) });
 }
 
 export async function PUT(req) {
