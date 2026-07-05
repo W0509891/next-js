@@ -4,50 +4,43 @@ import { executeQuery } from '@/app/lib/sqlite';
 import { Queries } from '@/app/lib/queries';
 import { CreateJobSchema, UpdateJobSchema } from '@/schemas/JobSchema';
 import {NextResponse} from "next/server";
-import {parse_date} from "@/app/lib/helpers";
 import {createJobAction} from "@/app/lib/actions.js";
-
-const allowedOrigins = process.env.ALLOWED_ORIGINS.split(';');
-
-function getCorsHeaders(req) {
-    const origin = req.headers.get('origin');
-    const isExtension = origin?.startsWith('chrome-extension://');
-    const headers = {
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    };
-
-    if (allowedOrigins.includes(origin) || isExtension) {
-        headers['Access-Control-Allow-Origin'] = origin;
-    }
-
-    return headers;
-}
-
-export async function OPTIONS(req) {
-    return NextResponse.json({}, { status: 200, headers: getCorsHeaders(req) });
-}
 
 export async function GET(req) {
     const id = req.nextUrl.searchParams.get('id');
     const rows = id ? await executeQuery(Queries.GET_JOB_BY_ID, id) : await executeQuery(Queries.GET_JOBS_NOT_REJECTED);
-    return NextResponse.json(rows, { headers: getCorsHeaders(req) });
+    return NextResponse.json(rows, {  });
 }
 
 export async function POST(req) {
-    const body = await req.json();
-    const result = CreateJobSchema.safeParse(body);
+    console.log("POST request received 2")
+    const fd = await req.formData();
+    const body = () => {
+        const data = {};
+        for (const [key, value] of fd.entries()) {
+            if (key === "appliedAt") {
+                data[key] = parseInt(value) ?? value;
+            }
+            else {
+                data[key] = value;
+            }
+        }
+        return data;
+    }
+    const result = CreateJobSchema.safeParse(body());
 
     if (!result.success) {
-        return NextResponse.json({ errors: result.error.flatten() }, { status: 400, headers: getCorsHeaders(req) });
+        return NextResponse.json({ errors: result.error.flatten() }, { status: 400});
     }
 
     const response = await createJobAction(result.data)
     if (!response.status){
-        return NextResponse.json({ errors: response.errors }, { status: 400, headers: getCorsHeaders(req) });
+        console.log("response failed", response)
+        return NextResponse.json({ errors: response.errors }, { status: 400,  });
     }
 
-    return NextResponse.json({ ok: response.status, data: response.data }, { status: 201, headers: getCorsHeaders(req) });
+    console.log("response good", response)
+    return NextResponse.json({ ok: response.status, data: response.data }, { status: 201,  });
 }
 
 export async function PUT(req) {
@@ -58,7 +51,7 @@ export async function PUT(req) {
     console.log("Result", result)
 
     if (!result.success) {
-        return NextResponse.json({ errors: result.error.flatten() }, { status: 400, headers: getCorsHeaders(req) });
+        return NextResponse.json({ errors: result.error.flatten() }, { status: 400,  });
     }
 
     const updatableFields = ["company", "title", "status", "appliedAt", "jobUrl", "notes"];
@@ -76,11 +69,11 @@ export async function PUT(req) {
         await executeQuery(Queries.UPDATE_JOB(fields), ...values, id);
     }
     
-    return NextResponse.json({ ok: true }, { status: 200, headers: getCorsHeaders(req) });
+    return NextResponse.json({ ok: true }, { status: 200,  });
 }
 
 export async function DELETE(req) {
     const { id } = await req.json();
     await executeQuery(Queries.DELETE_JOB, id);
-    return NextResponse.json({ ok: true }, { status: 200, headers: getCorsHeaders(req) });
+    return NextResponse.json({ ok: true }, { status: 200,  });
 }
