@@ -52,6 +52,11 @@ class Queries {
             );
     `;
 
+    static GET_COMPANIES = `
+        ${USE_DB}
+        SELECT DISTINCT(company) FROM jobs 
+        ORDER BY company ASC;
+    `;
     static GET_JOBS = `
         ${USE_DB}
         SELECT ${this.getFields}

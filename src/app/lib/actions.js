@@ -1,16 +1,21 @@
 'use server'
 
 import {revalidatePath} from "next/cache";
-import {redirect} from "next/navigation";
 import {executeQuery} from "./sqlite";
 import {Queries} from "./queries";
-import {CreateJobSchema, UpdateJobSchema, ValidateFile} from "@/schemas/JobSchema";
+import {CreateJobSchema, UpdateJobSchema} from "@/schemas/JobSchema";
 import {isAllowedFile, parse_date, sanitizeSegment} from "@/app/lib/helpers";
-import { BlobServiceClient } from "@azure/storage-blob";
+import {BlobServiceClient} from "@azure/storage-blob";
 
 
 const createJobAction = async (formData) => {
-    console.log("Create job action called with formData:", formData);
+    console.log("Create job action called with formData:", {
+        jobPostingPdf: formData.jobPostingPdf?.name,
+        jobPostingHtml: formData.jobPostingHtml?.name,
+        usedResume: formData.usedResume?.name,
+        usedCoverLetter: formData.usedCoverLetter?.name}
+    );
+
     const {company, title, status, jobUrl, notes } = formData
     const appliedAt = parse_date(formData["appliedAt"])
 
@@ -30,7 +35,16 @@ const createJobAction = async (formData) => {
         await batchUplaodDOcs({ company, jobId: id, title }, usedResume, usedCoverLetter, jobPostingHTML , jobPostingPdf);
 
     await executeQuery(Queries.INSERT_JOB, id, company, title, status, appliedAt, jobUrl, notes, usedResumeUrl, usedCoverLetterUrl, jobPostingPdfUrl, jobPostingHTMLUrl);
-    return {status: true, data: {id, ...result.data}}
+    const returnData = ()=> {
+        let data = {id, ...result.data, }
+        if (usedResumeUrl) data.usedResumeUrl = usedResumeUrl;
+        if (usedCoverLetterUrl) data.usedCoverLetterUrl = usedCoverLetterUrl;
+        if (jobPostingHTMLUrl) data.jobPostingHTMLUrl = jobPostingHTMLUrl;
+        if (jobPostingPdfUrl) data.jobPostingPdfUrl = jobPostingPdfUrl;
+
+        return data
+    }
+    return {status: true, data: returnData()}
 };
 
 const updateJobAction = async (formData) => {
@@ -106,6 +120,9 @@ const deleteJobAction = async (formData) => {
 
 }
 
+const getCompaniesAction = async () => {
+    return await executeQuery(Queries.GET_COMPANIES);
+}
 const exportToCSV = async (q, timeframe) => {
     const query = {
         daily: Queries.GET_JOBS_APPLIED_TODAY,
@@ -249,7 +266,7 @@ async function batchUplaodDOcs (job, usedResume, usedCoverLetter, jobPostingHTML
             if (!ok) {
                 return { status: false, errors: { resume: ["Only PDF or HTML files are allowed"] } };
             }
-            urls.jobPostingHTMLUrl = await uploadToBlobStorage(job, jobPostingPdf)
+            urls.jobPostingPdfUrl = await uploadToBlobStorage(job, jobPostingPdf)
         }
         return urls
     } catch (e) {
@@ -257,5 +274,5 @@ async function batchUplaodDOcs (job, usedResume, usedCoverLetter, jobPostingHTML
         // Do not block job creation on upload error; proceed
     }
 }
-export {createJobAction, updateJobAction, deleteJobAction, exportToCSV, importFromCSV, executeQuery,
-    updateStatusAction}
+
+export {createJobAction, updateJobAction, deleteJobAction, exportToCSV, importFromCSV, executeQuery, updateStatusAction, getCompaniesAction}
