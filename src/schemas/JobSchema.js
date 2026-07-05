@@ -2,6 +2,7 @@ import * as z from 'zod';
 import {STATUSES} from "../app/lib/constants.ts";
 
 const ACCEPTED_FILE_TYPES = ["application/pdf", "text/html"];
+const ACCEPTED_HTML_TYPES = ["text/html", "multipart/related"];
 export const JobSchema = z.object({
     id: z.union([z.string(), z.number()]).optional(),
 
@@ -24,8 +25,8 @@ export const JobSchema = z.object({
         .optional(),
 
     usedResume: z.instanceof(File).optional().refine(file => ACCEPTED_FILE_TYPES.includes(file?.type)),
-    jobPostingPdf: z.instanceof(File).optional().refine(file => ACCEPTED_FILE_TYPES[0].includes(file?.type)),
-    jobPostingHtml: z.instanceof(File).optional().refine(file => ACCEPTED_FILE_TYPES[1].includes(file?.type)),
+    jobPostingPdf: z.instanceof(File).optional().refine(file => ACCEPTED_FILE_TYPES.includes(file?.type)),
+    jobPostingHtml: z.instanceof(File).optional().refine(file => ACCEPTED_HTML_TYPES.includes(file?.type)),
     usedCoverLetter: z.instanceof(File).optional().refine(file => ACCEPTED_FILE_TYPES.includes(file?.type)),
 
     appliedAt: z.union([z.string(), z.number()]).optional(),
