@@ -26,11 +26,11 @@ export default function RootLayout({children}) {
         <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
 
-        <header style={{padding: "12px 16px", borderBottom: "1px solid #eaeaea"}}>
+        <header className="border-b border-gray-200 px-4 py-3 dark:border-gray-800 sm:px-6">
             <Navbar/>
         </header>
-        <div className="flex min-h-screen items-center justify-center font-sans bg-background">
-            <main className="min-h-screen w-full py-2 px-16">
+        <div className="flex min-h-screen items-start justify-center bg-background font-sans">
+            <main className="min-h-screen w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
                 <div className="w-full items-center gap-6 text-center sm:items-start sm:text-left">
                     {children}
                 </div>

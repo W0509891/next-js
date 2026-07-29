@@ -5,7 +5,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS.split(';');
 function getCorsHeaders(origin) {
     const isExtension = origin?.startsWith('chrome-extension://');
     const headers = {
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     };
 
@@ -25,13 +25,17 @@ export const proxy = async (req) => {
         return NextResponse.json({}, { status: 200, headers: headers});
     }
 
+    if (req.method === 'PATCH') {
+        console.log("Patch 1")
+    }
+
     if (req.method === "POST" || req.method === "DELETE") {
         (req.method === "POST") ?
             console.log("POST request received 1")
             : console.log("DELETE request received 1")
 
         const ctype = req.headers.get('content-type') || '';
-
+        console.log(req.headers)
         if (ctype.includes('application/json')) {
             const body = await req.json();
             console.log('JSON body:', body);

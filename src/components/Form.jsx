@@ -72,13 +72,13 @@ function Form({action, title, data, onCancel}) {
     };
 
     return (
-        <div className="w-full max-w-2xl mx-auto p-4">
+        <div className="mx-auto w-full max-w-2xl p-2 sm:p-4">
             <form onSubmit={handleSubmit} encType={"multipart/form-data"} className="bg-surface text-foreground
-            rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 p-8">
+            rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 p-4 sm:p-8">
 
                 <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center mb-2">
-                        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{title}</h1>
+                    <div className="mb-2 flex items-start justify-between gap-4">
+                        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 sm:text-3xl">{title}</h1>
                         {onCancel ? (
                             <button
                                 type="button"

@@ -102,7 +102,7 @@ const updateJobAction = async (formData) => {
         console.log("innit",values)
         await executeQuery(Queries.UPDATE_JOB(fields), ...values, id);
         console.log("Job updated successfully", data)
-        // return {status: true, data: {id, ...result.data}}
+        return {status: true, data: {id, ...result.data}}
     }
 };
 

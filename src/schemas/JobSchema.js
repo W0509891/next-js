@@ -4,7 +4,7 @@ import {STATUSES} from "../app/lib/constants.ts";
 const ACCEPTED_FILE_TYPES = ["application/pdf", "text/html"];
 const ACCEPTED_HTML_TYPES = ["text/html", "multipart/related"];
 export const JobSchema = z.object({
-    id: z.union([z.string(), z.number()]).optional(),
+    id: z.string().optional(),
 
     title: z.string()
         .min(3, "Surely the job has a title, right?")

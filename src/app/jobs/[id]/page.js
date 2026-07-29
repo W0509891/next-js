@@ -14,16 +14,16 @@ const JobDetailPage = async ({params}) => {
     if (!job) return <p className="text-center text-lg mt-10">Job not found</p>
 
     return (
-        <article className="max-w-2xl mx-auto  p-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-800">
+        <article className="mx-auto w-full max-w-2xl rounded-lg border border-gray-200 p-4 shadow-md dark:border-gray-800 sm:p-8">
             <Link href={'/jobs'}
                   className={"px-4 py-2 bg-blue-50 hover:bg-transparent hover:text-white text-black rounded-md" +
                       " transition-colors" +
                       " font-medium text-sm"}>
                 Back
             </Link>
-            <header className="mt-4 mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{job.title}</h1>
-                <p className="text-xl text-gray-600 dark:text-gray-400 font-medium">{job.company}</p>
+            <header className="mb-6 mt-4">
+                <h1 className="mb-2 break-words text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">{job.title}</h1>
+                <p className="break-words text-lg font-medium text-gray-600 dark:text-gray-400 sm:text-xl">{job.company}</p>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -67,10 +67,10 @@ const JobDetailPage = async ({params}) => {
                     Last updated: {new Date(job.updatedAt).toLocaleString()}
                 </div>
 
-                <div className="flex flex-row items-center gap-4">
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
                     <Link
                         href={`/jobs/${jobId}/edit`}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium text-sm"
+                        className="w-full rounded-md bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-blue-700 sm:w-auto"
                     >
                         Edit Job
                     </Link>
@@ -78,7 +78,7 @@ const JobDetailPage = async ({params}) => {
                     <form action={deleteJobAction} method="post">
                         <input type="hidden" name="id" value={job.id}/>
                         <button
-                            className="px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-md transition-colors font-medium text-sm border border-transparent hover:border-red-200 dark:hover:border-red-900/30"
+                            className="w-full rounded-md border border-transparent px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:border-red-200 hover:bg-red-50 dark:hover:border-red-900/30 dark:hover:bg-red-900/10 sm:w-auto"
                             type="submit"
                         >
                             Delete

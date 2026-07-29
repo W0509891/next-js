@@ -34,9 +34,9 @@ export const JobDetails = ({ job, onEdit, onClose }) => {
 
     return (
         <div className="flex flex-col h-full bg-surface text-foreground">
-            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-800">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{job.company}</h2>
+            <div className="flex items-start justify-between gap-4 border-b border-gray-200 p-4 dark:border-gray-800 sm:p-6">
+                <div className="min-w-0">
+                    <h2 className="break-words text-xl font-bold text-gray-900 dark:text-gray-100 sm:text-2xl">{job.company}</h2>
                     <p className="text-gray-600 dark:text-gray-400">{job.title}</p>
                 </div>
                 <button 
@@ -49,7 +49,7 @@ export const JobDetails = ({ job, onEdit, onClose }) => {
                 </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 space-y-2">
+            <div className="flex-1 space-y-2 overflow-y-auto p-4 sm:p-6">
                 <DetailItem label="Status" isStatus={true} status={status} handleStatusChange={handleStatusChange} />
                 <DetailItem label="Company" value={job.company} onEditClick={onEdit} />
                 <DetailItem label="Job Title" value={job.title} onEditClick={onEdit} />
@@ -58,7 +58,7 @@ export const JobDetails = ({ job, onEdit, onClose }) => {
                 <DetailItem label="Notes" value={job.notes} onEditClick={onEdit} />
             </div>
 
-            <div className="p-6 border-t border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex justify-between items-center">
+            <div className="flex flex-col items-stretch justify-between gap-4 border-t border-gray-200 bg-gray-50/50 p-4 dark:border-gray-800 dark:bg-gray-900/50 sm:flex-row sm:items-center sm:p-6">
                 <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-bold uppercase text-gray-400">ID & Last Updated</span>
                     <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -74,9 +74,9 @@ export const JobDetails = ({ job, onEdit, onClose }) => {
                         <span>{stringify_date(job.updatedAt, 2)}</span>
                     </div>
                 </div>
-                <button 
+                <button
                     onClick={onEdit}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
+                    className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700"
                 >
                     <Edit2 size={16} /> Edit All
                 </button>

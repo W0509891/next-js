@@ -151,7 +151,7 @@ const JobsPage = () => {
         }
     };
     return (
-        <section className="max-w-4xl mx-auto p-4 relative">
+        <section className="relative mx-auto w-full max-w-4xl p-0 sm:p-4">
             {showNewJob && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div
@@ -159,7 +159,7 @@ const JobsPage = () => {
                         onClick={() => showNewJobModal(false)}
                     ></div>
                     <div
-                        className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
+                        className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-surface shadow-2xl sm:h-3/4">
                         <Form
                             action={async (formData) => await handleAddJob(formData)}
                             title={"Add New Job"}
@@ -179,7 +179,7 @@ const JobsPage = () => {
                         }}
                     ></div>
                     <div
-                        className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
+                        className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-surface shadow-2xl sm:h-3/4">
                         <Form
                             action={async (formData) => handleUpdateJob(formData)}
                             title={"Update Job"}
@@ -203,7 +203,7 @@ const JobsPage = () => {
                         }}
                     ></div>
                     <div
-                        className="relative z-10 w-full max-w-2xl bg-surface h-3/4 rounded-xl shadow-2xl overflow-hidden">
+                        className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-surface shadow-2xl sm:h-3/4">
                         <JobDetails
                             job={selectedJob}
                             onClose={() => {
@@ -218,27 +218,27 @@ const JobsPage = () => {
                     </div>
                 </div>
             )}
-            <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                <h1 className="text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
+            <div className="mb-6 flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-center">
+                <h1 className="text-2xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50 sm:text-3xl">
                     Job Listings
                 </h1>
-                <div className="flex flex-wrap gap-2 justify-center text-foreground">
+                <div className="grid grid-cols-2 gap-2 text-foreground sm:flex sm:flex-wrap sm:justify-center">
                     <button className="px-4 py-2   rounded hover:bg-blue-300 transition-colors">
-                        <a href="/api/download/db">Download DB</a>
+                        <a className="block" href="/api/download/db">Download DB</a>
                     </button>
                     <button className="px-4 py-2   rounded hover:bg-green-700 transition-colors">
-                        <a href="/api/download/csv?q=all">Export CSV</a>
+                        <a className="block" href="/api/download/csv?q=all">Export CSV</a>
                     </button>
                     <button className="px-4 py-2   rounded hover:bg-green-500 transition-colors">
-                        <a href="/api/download/csv?q=daily">Get Today</a>
+                        <a className="block" href="/api/download/csv?q=daily">Get Today</a>
                     </button>
 
-                    <label className="px-4 py-2 rounded hover:bg-yellow-700 transition-colors cursor-pointer">
+                    <label className="cursor-pointer rounded px-4 py-2 text-center transition-colors hover:bg-yellow-700">
                         Import CSV
                         <input type="file" accept=".csv" onChange={handleImport} className="hidden"/>
                     </label>
                     <div onClick={() => showNewJobModal(!showNewJob)}
-                         className="px-4 py-2  rounded hover:bg-indigo-700 transition-colors">
+                         className="cursor-pointer rounded px-4 py-2 text-center transition-colors hover:bg-indigo-700">
                         Add Job
                     </div>
                 </div>
@@ -246,7 +246,7 @@ const JobsPage = () => {
 
             {/* Filter/Sort Controls */}
             <div
-                className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 bg-surface p-4 rounded-lg border border-gray-200 dark:border-gray-800">
+                className="mb-8 grid grid-cols-1 gap-4 rounded-lg border border-gray-200 bg-surface p-3 dark:border-gray-800 sm:p-4 md:grid-cols-4">
                 <div className="flex flex-col gap-1 text-foreground">
                     <label className="text-xs font-semibold uppercase text-gray-500">Search</label>
                     <input
@@ -338,14 +338,14 @@ const JobsPage = () => {
                         {/* Pagination Controls */}
                         {totalPages > 1 && (
                             <div
-                                className="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
+                                className="flex flex-col items-stretch gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900/50 sm:flex-row sm:items-center sm:justify-between">
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                     Showing <span
                                     className="font-medium">{(currentPage - 1) * pageSize + 1}</span> to <span
                                     className="font-medium">{Math.min(currentPage * pageSize, filteredJobs.length)}</span> of <span
                                     className="font-medium">{filteredJobs.length}</span> results
                                 </p>
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2 sm:justify-end">
                                     <button
                                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                         disabled={currentPage === 1}
@@ -353,7 +353,7 @@ const JobsPage = () => {
                                     >
                                         Previous
                                     </button>
-                                    <div className="flex gap-1">
+                                    <div className="flex max-w-full flex-wrap gap-1">
                                         {[...Array(totalPages)].map((_, i) => (
                                             <button
                                                 key={i}

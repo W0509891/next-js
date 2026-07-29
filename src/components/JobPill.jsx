@@ -24,25 +24,25 @@ function JobPill({job, onEdit, onDelete, onClick ,onStatusChange}) {
 
     return (
         <>
-            <div className="border border-gray-200 dark:border-gray-800 p-4 rounded-lg hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
-                <div className={`text-foreground flex justify-between items-center cursor-pointer`}>
-                    <div onClick={onClick} className={'w-full'}>
-                        <h2 className="text-xl font-bold">{job.company}</h2>
-                        <p className="text-gray-600 dark:text-gray-400">{job.title}</p>
+            <div className="rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
+                <div className="flex flex-col gap-4 text-foreground sm:flex-row sm:items-center sm:justify-between">
+                    <div onClick={onClick} className="min-w-0 flex-1 cursor-pointer">
+                        <h2 className="break-words text-lg font-bold sm:text-xl">{job.company}</h2>
+                        <p className="break-words text-gray-600 dark:text-gray-400">{job.title}</p>
                     </div>
-                    <div className="flex items-center w-1/5 justify-between *:cursor-pointer">
-                        <button className={"hover:text-teal-300"}
+                    <div className="flex w-full items-center justify-end gap-4 sm:w-auto sm:gap-3">
+                        <button className="p-1 hover:text-teal-300"
                                 onClick={onEdit}>
                             <Svg use="/edit.svg" className="w-6 h-6" />
                         </button>
-                        <button className={"hover:text-red-300"}
+                        <button className="p-1 hover:text-red-300"
                                 onClick={onDelete}
                         >
                             <Svg use="/delete.svg" className="w-6 h-6" />
                         </button>
 
                         <select name="status" id="status"
-                                className={`rounded-full px-2 py-1 cursor-pointer outline-none
+                                className={`max-w-full rounded-full px-2 py-2 cursor-pointer outline-none
                                  transition-colors ${statusColor(status)}`}
                                 value={status}
                                 onChange={e => handleStatusChange(job.id, e.target.value)}
