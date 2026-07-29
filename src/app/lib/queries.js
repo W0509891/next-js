@@ -74,11 +74,10 @@ class Queries {
 
     static GET_JOBS_BY_TIMEFRAME = (time = -7)=> `
     ${USE_DB}
-    SELECT ${this.getFields}
-    FROM jobs
+    SELECT title, company, url
+    from jobs_formattedDate
     WHERE 
         appliedAt >= unixepoch('now', '${time} days')
-        and status != 'Rejected';
     `
     static GET_JOB_BY_ID = `
         ${USE_DB}
