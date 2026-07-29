@@ -130,7 +130,7 @@ const exportToCSV = async (q, timeframe) => {
         all: Queries.GET_JOBS,
     }
     const jobs = await executeQuery(query[q]);
-    if (jobs.length === 0) return;
+    if (jobs.length === 0) return {message: "No jobs found"};
 
     const csv = await convertJSONToCSV(jobs);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

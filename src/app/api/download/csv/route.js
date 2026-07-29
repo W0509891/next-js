@@ -9,6 +9,12 @@ export async function GET(req) {
         const timeframe = req.nextUrl.searchParams.get('timeframe');
         console.log("Query Params:",  q, timeframe)
         const csv = await exportToCSV(q, parseInt(timeframe));
+        if (csv.message) {
+            return Response.json(
+                {success: false, message: csv.message},
+                {status: 500}
+            );
+        }
         return new Response(csv, {
             headers: {
                 "Content-Type": "text/csv",
