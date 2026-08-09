@@ -201,7 +201,7 @@ const importFromCSV = async (csvText) => {
 }
 
 
-const uploadToBlobStorage = async ({ company, jobId, title }, file) => {
+export const uploadToBlobStorage = async ({ company, jobId, title }, file) => {
     const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
     if (!connectionString) {
         throw new Error('AZURE_STORAGE_CONNECTION_STRING is not set');
